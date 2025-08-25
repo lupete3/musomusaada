@@ -26,6 +26,7 @@ class GrantCredit extends Component
     public $installments = 6;
     public $start_date;
     public $frequency = 'daily'; // 'daily', 'monthly', 'weekly'
+    public $frais_dossier = 0;
 
     public $description = '';
 
@@ -102,7 +103,7 @@ class GrantCredit extends Component
                 ->lockForUpdate()
                 ->firstOrCreate(['currency' => $this->currency], ['balance' => 0]);
 
-            $creditFrisFix = round($this->amount * (5 / 100), 2);
+            $creditFrisFix = round($this->amount * ($this->frais_dossier / 100), 2);
             //$creditFris = round($this->amount * ($this->interest_rate / 100), 2);
 
             if ($account->balance < $creditFrisFix) {
@@ -228,7 +229,7 @@ class GrantCredit extends Component
                 ['balance' => 0]
             );
 
-            $commissionCreditAccount->balance += $interestPart;
+            $commissionCreditAccount->balance += $creditFrisFix;
             $commissionCreditAccount->save();
 
             // Envoyer le montant du crédit au compte 2 du caissier pour attente du retrait
