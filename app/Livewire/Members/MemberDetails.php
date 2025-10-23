@@ -5,15 +5,12 @@ namespace App\Livewire\Members;
 use App\Helpers\UserLogHelper;
 use App\Models\Account;
 use App\Models\AgentAccount;
-use App\Models\DailyContribution;
 use App\Models\MainCashRegister;
 use App\Models\MembershipCard;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Transaction;
-use App\Models\UserLog;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -37,7 +34,7 @@ class MemberDetails extends Component
     public $contribution_date;
     public $amount = 0;
     public $a_retenir = 0;
-    public $operation_type;
+    public $operation_type = 'carte';
 
     public $type;
 
@@ -75,8 +72,8 @@ class MemberDetails extends Component
             );
 
             // Récupération de la caisse de l'agent
-            $agentAccount = AgentAccount::firstOrCreate(
-                ['user_id' => Auth::id(), 'currency' => $this->currency],
+            $agentAccount = MainCashRegister::firstOrCreate(
+                ['currency' => $this->currency],
                 ['balance' => 0]
             );
 
@@ -198,8 +195,8 @@ class MemberDetails extends Component
                 ['balance' => 0]
             );
 
-            $agentAccount = AgentAccount::firstOrCreate(
-                ['user_id' => Auth::id(), 'currency' => $card->currency],
+            $agentAccount = MainCashRegister::firstOrCreate(
+                ['currency' => $card->currency],
                 ['balance' => 0]
             );
 
@@ -278,8 +275,8 @@ class MemberDetails extends Component
             }
 
             // Récupération de la caisse de l'agent
-            $agentAccount = AgentAccount::firstOrCreate(
-                ['user_id' => Auth::id(), 'currency' => $this->currency],
+            $agentAccount = MainCashRegister::firstOrCreate(
+                ['currency' => $this->currency],
                 ['balance' => 0]
             );
 
@@ -304,11 +301,9 @@ class MemberDetails extends Component
                 $retenuMiseAccount->balance += $this->a_retenir;
                 $retenuMiseAccount->save();
             }
-            
 
             $account->save();
             $agentAccount->save();
-            
 
             // Création de la transaction
             $transaction = Transaction::create([
@@ -335,7 +330,7 @@ class MemberDetails extends Component
             if (
                 $this->a_retenir > 0
             ) {
-                
+
                 // Création de la transaction pour le compte retenu mise
                 $retenuMiseAccount = Transaction::create([
                     'account_id' => null,
@@ -347,7 +342,7 @@ class MemberDetails extends Component
                     'description' => $this->description ?: "Entree Retenu du compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " par " . Auth::user()->name,
                 ]);
 
-            }   
+            }
 
             UserLogHelper::log_user_activity(
                 action: 'retrait',
@@ -405,8 +400,8 @@ class MemberDetails extends Component
             }
 
             // Récupération de la caisse de l'agent
-            $agentAccount = AgentAccount::firstOrCreate(
-                ['user_id' => Auth::id(), 'currency' => $card->currency],
+            $agentAccount = MainCashRegister::firstOrCreate(
+                ['currency' => $card->currency],
                 ['balance' => 0]
             );
 
@@ -491,24 +486,26 @@ class MemberDetails extends Component
 
     public function closeDepositModal()
     {
+        $this->resetFilters();
         $this->dispatch('closeModal', name: 'modalDepositMembre');
-        $this->reset(['type']);
 
     }
 
     public function closeRetraitModal()
     {
+        $this->resetFilters();
         $this->dispatch('closeModal', name: 'modalRetraitMembre');
     }
 
     public function openDepositModal()
     {
-        $this->type = '';
+        $this->resetFilters();
         $this->dispatch('openModal', name: 'modalDepositMembre');
 
     }
     public function openRetraitModal()
     {
+        $this->resetFilters();
         $this->dispatch('openModal', name: 'modalRetraitMembre');
     }
 
@@ -539,6 +536,15 @@ class MemberDetails extends Component
             'transactions' => $transactions,
             'cards' => $this->cards
         ]);
+    }
+
+    public function resetFilters()
+    {
+        $this->reset(['card_id', 'search', 'perPage']);
+        $this->selectedCard = null;
+        $this->resetPage();
+        $this->dispatch('$refresh');
+        $this->dispatch('filtersReset');
     }
 
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AgentDashboardController extends Controller
@@ -28,52 +29,72 @@ class AgentDashboardController extends Controller
 
         $query = Transaction::where('user_id', $userId);
 
-        $query = $this->applyDateFilter($query, $filter);   
-
+        // Gestion des filtres temporels
         switch ($filter) {
             case 'day':
                 $query->whereDate('created_at', $now->toDateString());
+                $periodLabel = "Aujourd'hui (" . $now->format('d/m/Y') . ")";
                 break;
+
+            case 'week':
+                $startOfWeek = $now->copy()->startOfWeek();
+                $endOfWeek = $now->copy()->endOfWeek();
+                $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                $periodLabel = "Semaine du " . $startOfWeek->format('d/m/Y') . " au " . $endOfWeek->format('d/m/Y');
+                break;
+
             case 'month':
                 $query->whereMonth('created_at', $now->month)
                     ->whereYear('created_at', $now->year);
+                $periodLabel = "Mois de " . $now->translatedFormat('F Y');
                 break;
+
             case 'year':
                 $query->whereYear('created_at', $now->year);
+                $periodLabel = "Année " . $now->year;
                 break;
+
+            case 'custom':
+                $start = $request->input('startDate');
+                $end = $request->input('endDate');
+                $startDate = Carbon::parse($start)->startOfDay();
+                $endDate = Carbon::parse($end)->endOfDay();
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+                $periodLabel = "Du " . $startDate->format('d/m/Y') . " au " . $endDate->format('d/m/Y');
+                break;
+
+            default:
+                $periodLabel = "Toutes les transactions";
         }
 
+        // Récupération des transactions filtrées
         $transactions = $query->orderByDesc('created_at')->get();
-
-        // Compter le nombre de transactions filtrées
         $transactionCount = $transactions->count();
 
-        // Totaux par devise
-        $totalByCurrency = $transactions->groupBy('currency')->map(function ($group) {
-            return $group->sum('amount');
+        // ✅ Totaux par devise (groupés)
+        $totalsByCurrency = $transactions->groupBy('currency')->map(function ($group) {
+            $totalDeposits = $group->whereIn('type', ['dépôt', 'mise_quotidienne', 'vente_carte_adhesion'])->sum('amount');
+            $totalWithdrawals = $group->whereIn('type', ['retrait', 'retrait_carte_adhesion'])->sum('amount');
+            $balance = $totalDeposits - $totalWithdrawals;
+
+            return [
+                'total_deposits' => $totalDeposits,
+                'total_withdrawals' => $totalWithdrawals,
+                'balance' => $balance,
+            ];
         });
 
-        // Génération PDF avec tous les paramètres
+        // ✅ PDF avec tous les paramètres
         $pdf = Pdf::loadView('pdf.agent-transactions', compact(
             'user',
             'transactions',
             'filter',
-            'totalByCurrency',
-            'transactionCount'
+            'totalsByCurrency',
+            'transactionCount',
+            'periodLabel'
         ));
+
         return $pdf->download("transactions_{$user->id}_{$filter}.pdf");
     }
 
-    protected function applyDateFilter($query, $filter)
-    {
-        $now = now();
-
-        return match ($filter) {
-            'day' => $query->whereDate('created_at', $now->toDateString()),
-            'month' => $query->whereMonth('created_at', $now->month)
-                        ->whereYear('created_at', $now->year),
-            'year' => $query->whereYear('created_at', $now->year),
-            default => $query,
-        };
-    }
 }

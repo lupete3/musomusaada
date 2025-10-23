@@ -13,9 +13,9 @@
                                 <div class="input-group input-group-merge">
                                     <span class="input-group-text" id="basic-addon-search31">
                                         <i class="icon-base bx bx-search"></i></span>
-                                    <input type="search" wire:model.live="search" class="form-control" 
+                                    <input type="search" wire:model.live="search" class="form-control"
                                         placeholder="Rechercher un membre"
-                                        autocomplete="off" aria-label="Rechercher un membre" 
+                                        autocomplete="off" aria-label="Rechercher un membre"
                                         aria-describedby="basic-addon-search31">
                                 </div>
                             </div>
@@ -36,14 +36,8 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label>Code de la carte</label>
-                        <input type="text" wire:model="code" class="form-control" />
-                        @error('code') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
                         <label>Devise</label>
-                        <select wire:model="currency" class="form-control">
+                        <select wire:model="currency" class="form-select">
                             <option value="USD">USD</option>
                             <option value="CDF">CDF</option>
                         </select>
@@ -51,12 +45,6 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label>Prix de la carte</label>
-                        <input type="number" step="0.01" wire:model="price" class="form-control" />
-                        @error('card_id') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="col-md-6 mb-3">
                         <label>Montant quotidien à épargner</label>
                         <input type="number" step="0.01" wire:model="subscription_amount" class="form-control" />
                         @error('card_id') <span class="text-danger">{{ $message }}</span> @enderror
@@ -92,7 +80,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Membre</th>
-                                <th>Prix de la carte</th>
+                                <th>Prix du carnet</th>
                                 <th>Montant quotidien</th>
                                 <th>Devise</th>
                                 <th>Date de début</th>
@@ -121,7 +109,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="text-center">Aucune carte trouvée.</td></tr>
+                                <tr><td colspan="8" class="text-center">Aucune carte trouvée.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -45,17 +45,7 @@ class UserManagement extends Component
                 'postnom' => ['required', 'string', 'max:255'],
                 'prenom' => ['nullable', 'string', 'max:255'],
                 'date_naissance' => ['required', 'date'],
-                'telephone' => [
-                    'required',
-                    'string',
-                    'max:20',
-                    'regex:/^\+243\d{9}$/',
-                    Rule::unique('users')->where(function ($query) {
-                        return $query->where('name', $this->name)
-                                    ->where('postnom', $this->postnom)
-                                    ->where('telephone', $this->telephone);
-                    }),
-                ],
+                'telephone' => ['nullable', 'string'],
                 'adresse_physique' => ['nullable', 'string'],
                 'profession' => ['nullable', 'string'],
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
@@ -67,8 +57,6 @@ class UserManagement extends Component
                 'prenom.string' => 'Le prénom doit être une chaîne de caractères.',
                 'date_naissance.required' => 'La date de naissance est obligatoire.',
                 'date_naissance.date' => 'La date de naissance doit être une date valide.',
-                'telephone.regex' => 'Le numéro de téléphone doit commencer par +243 et contenir 9 chiffres après.',
-                'telephone.unique' => 'Un membre avec le même nom, post-nom et numéro existe déjà.',
                 'adresse_physique.string' => 'L’adresse physique doit être une chaîne de caractères.',
                 'profession.string' => 'La profession doit être une chaîne de caractères.',
                 'email.required' => 'L’adresse e-mail est obligatoire.',
@@ -162,19 +150,7 @@ class UserManagement extends Component
                 'postnom' => ['required', 'string', 'max:255'],
                 'prenom' => ['nullable', 'string', 'max:255'],
                 'date_naissance' => ['required', 'date'],
-                'telephone' => [
-                    'required',
-                    'string',
-                    'max:20',
-                    'regex:/^\\+243\\d{9}$/',
-                    Rule::unique('users')
-                        ->ignore($this->userId)
-                        ->where(function ($query) {
-                            return $query->where('name', $this->name)
-                                ->where('postnom', $this->postnom)
-                                ->where('telephone', $this->telephone);
-                        }),
-                ],
+                'telephone' => ['nullable', 'string'],
                 'adresse_physique' => ['nullable', 'string'],
                 'profession' => ['nullable', 'string'],
                 'email' => [

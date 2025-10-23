@@ -34,7 +34,7 @@
                                 <!-- Nom -->
                                 <div class="col-md-4 mb-1">
                                     <label for="name" class="form-label">Nom</label>
-                                    <input type="text" wire:model.defer="name" id="name" class="form-control"
+                                    <input type="text" wire:model.lazy="name" id="name" class="form-control"
                                         placeholder="Nom" required autofocus />
                                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -42,7 +42,7 @@
                                 <!-- Postnom -->
                                 <div class="col-md-4 mb-1">
                                     <label for="postnom" class="form-label">Postnom</label>
-                                    <input type="text" wire:model.defer="postnom" id="postnom" class="form-control"
+                                    <input type="text" wire:model.lazy="postnom" id="postnom" class="form-control"
                                         placeholder="Postnom" required />
                                     @error('postnom') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -68,7 +68,7 @@
                                 <!-- Date de naissance -->
                                 <div class="col-md-4 mb-1">
                                     <label for="date_naissance" class="form-label">Date de naissance</label>
-                                    <input type="date" wire:model.defer="date_naissance" id="date_naissance"
+                                    <input type="date" wire:model.defer="date_naissance" id="date_naissance" value="{{ date('Y') }}"
                                         class="form-control" required />
                                     @error('date_naissance') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -77,7 +77,7 @@
                                 <div class="col-md-4 mb-1">
                                     <label for="telephone" class="form-label">Téléphone</label>
                                     <input type="text" wire:model.defer="telephone" id="telephone"
-                                        class="form-control" placeholder="+243..." required />
+                                        class="form-control" placeholder="+243..." />
                                     @error('telephone') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
 
@@ -92,7 +92,7 @@
                                 <!-- Email -->
                                 <div class="col-md-8 mb-1">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="email" wire:model.defer="email" id="email" class="form-control"
+                                    <input type="email" wire:model="email" id="email" class="form-control"
                                         placeholder="exemple@domaine.com" required />
                                     @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -654,6 +654,5 @@
         </div>
     </div>
 </div>
-
 
 <!-- Table des adhésions (inchangée) -->

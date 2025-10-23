@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\User;
 use App\Models\Account;
 use App\Models\AgentAccount;
+use App\Models\MainCashRegister;
 use App\Models\MembershipCard;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ class PurchaseMembershipCard extends Component
     public $searchCard;
     public $member_id;
     public $currency = 'CDF';
-    public $price = 0;
+    public $price = 500;
     public $subscription_amount = 0;
     public $code;
 
@@ -32,7 +33,6 @@ class PurchaseMembershipCard extends Component
     public $results = [];
 
     protected $rules = [
-        'code' => 'required',
         'member_id' => 'required|exists:users,id',
         'currency' => 'required|in:USD,CDF',
         'price' => 'required|numeric|min:0.01',
@@ -95,6 +95,9 @@ class PurchaseMembershipCard extends Component
             $startDate = now();
             $endDate = $startDate->copy()->addDays(30); // 31 jours incluant le jour de début
 
+            // Génération automatique du code
+            $this->code = $this->generateCardCode();
+
             // Création de la carte avec les dates
             $card = MembershipCard::create([
                 'code' => $this->code,
@@ -106,7 +109,6 @@ class PurchaseMembershipCard extends Component
                 'end_date' => $endDate,
                 'is_active' => true,
             ]);
-          
 
             // Génération des 31 mises
             $startDate = now();
@@ -120,8 +122,8 @@ class PurchaseMembershipCard extends Component
                 ]);
             }
             // Débit du compte agent
-            $agentAccount = AgentAccount::firstOrCreate(
-                ['user_id' => Auth::user()->id, 'currency' => 'CDF'],
+            $agentAccount = MainCashRegister::firstOrCreate(
+                ['currency' => 'CDF'],
                 ['balance' => 0]
             );
             $agentAccount->balance += $this->price;
@@ -138,7 +140,6 @@ class PurchaseMembershipCard extends Component
             // Enregistrement de la transaction
             Transaction::create([
                 'account_id' => null,
-                'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::user()->id,
                 'type' => 'vente_carte_adhesion',
                 'currency' => 'CDF',
@@ -146,7 +147,6 @@ class PurchaseMembershipCard extends Component
                 'balance_after' => $agentAccount->balance,
                 'description' => "Vente de carte à {$member->name} - Montant: {$this->price} CDF",
             ]);
-
 
             // Enregistrement de la transaction dans le compte 8
             Transaction::create([
@@ -173,6 +173,7 @@ class PurchaseMembershipCard extends Component
             notyf()->success('Carte achetée avec succès !');
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage());
             notyf()->error("Cette carte existe déjà");
         }
     }
@@ -201,4 +202,27 @@ class PurchaseMembershipCard extends Component
             'cards' => $cards->latest()->paginate($this->perPage)
         ]);
     }
+
+    private function generateCardCode()
+    {
+        $year = now()->year;
+
+        // Récupérer la dernière carte créée pour l'année en cours
+        $lastCard = MembershipCard::whereYear('created_at', $year)
+            ->orderByDesc('id')
+            ->first();
+
+        // Si aucune carte n’existe encore pour cette année
+        if (!$lastCard) {
+            $nextNumber = 1;
+        } else {
+            // Extraire la partie numérique avant le slash du code (ex: "0001" dans "0001/2025")
+            $lastNumber = (int) explode('/', $lastCard->code)[0];
+            $nextNumber = $lastNumber + 1;
+        }
+
+        // Format du code : 4 chiffres + "/" + année, ex: "0001/2025"
+        return str_pad($nextNumber, 4, '0', STR_PAD_LEFT) . '/' . $year;
+    }
+
 }

@@ -169,7 +169,7 @@ class User extends Authenticatable
         static::creating(function ($user) {
             $exists = static::where('name', $user->name)
                 ->where('postnom', $user->postnom)
-                ->where('telephone', $user->telephone)
+                ->where('prenom', $user->prenom)
                 ->exists();
 
             if ($exists) {
@@ -181,7 +181,7 @@ class User extends Authenticatable
             $exists = static::where('id', '!=', $user->id)
                 ->where('name', $user->name)
                 ->where('postnom', $user->postnom)
-                ->where('telephone', $user->telephone)
+                ->where('prenom', $user->prenom)
                 ->exists();
 
             if ($exists) {

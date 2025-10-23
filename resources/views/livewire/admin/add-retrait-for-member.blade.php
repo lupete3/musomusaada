@@ -9,7 +9,7 @@
                     <button type="button" class="btn-close" aria-label="Close" wire:click='closeRetraitModal'></button>
                 </div>
 
-                <div class="modal-body row">
+                {{-- <div class="modal-body row">
                     <div class="col-md-12">
                         <select name="type" wire:model.lazy='type' class="form-control">
                             <option value="">Choisir type d'operation</option>
@@ -17,7 +17,7 @@
                             <option value="normal">Normal</option>
                         </select>
                     </div>
-                </div>
+                </div> --}}
 
                 @if ($operation_type == 'normal')
 

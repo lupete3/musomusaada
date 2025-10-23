@@ -25,7 +25,7 @@ class RegisterMember extends Component
     public string $name = '';
     public string $postnom = '';
     public ?string $prenom = null;
-    public ?string $sexe;
+    public ?string $sexe = null;
     public ?string $date_naissance = null;
     public ?string $lieu_naissance = null;
     public string $telephone = '';
@@ -87,6 +87,19 @@ class RegisterMember extends Component
     public $currentStep = 1;
     public $totalSteps = 5;
 
+    // Dès que "name" change, on met à jour l'email
+    public function updatedPostnom($value)
+    {
+        if (!empty($value)) {
+            // Nettoyage du nom : espaces -> points, minuscules
+            $username = strtolower(str_replace(' ', '.', $value));
+            $name = strtolower(str_replace(' ', '.', $this->name));
+
+            $this->email = $name . $username . '@gmail.com';
+        } else {
+            $this->email = '';
+        }
+    }
 
     public function nextStep()
     {
@@ -114,17 +127,7 @@ class RegisterMember extends Component
                     'postnom' => ['required', 'string', 'max:255'],
                     'prenom' => ['nullable', 'string', 'max:255'],
                     'sexe' => ['nullable', 'string', 'max:255'],
-                    'date_naissance' => ['required', 'date'],
-                    'telephone' => [
-                        'required',
-                        'string',
-                        'max:20',
-                        'regex:/^\+243\d{9}$/',
-                        Rule::unique('users')->where(fn ($query) => $query
-                            ->where('name', $this->name)
-                            ->where('postnom', $this->postnom)
-                            ->where('telephone', $this->telephone)),
-                    ],
+                    'telephone' => ['nullable', 'string'],
                     'profession' => ['nullable', 'string', 'max:255'],
                     'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
                     'adresse_physique' => ['nullable', 'string'],
@@ -173,8 +176,8 @@ class RegisterMember extends Component
         }
 
         $this->validate($rules);
-    }
 
+    }
 
     public function submitForm()
     {
@@ -183,7 +186,7 @@ class RegisterMember extends Component
             'postnom' => $this->postnom,
             'prenom' => $this->prenom,
             'sexe' => $this->sexe,
-            'date_naissance' => $this->date_naissance,
+            'date_naissance' => $this->date_naissance ?? null,
             'lieu_naissance' => $this->lieu_naissance,
             'telephone' => $this->telephone,
             'adresse_physique' => $this->adresse_physique,
@@ -217,18 +220,9 @@ class RegisterMember extends Component
             'postnom' => ['required', 'string', 'max:255'],
             'prenom' => ['nullable', 'string', 'max:255'],
             'sexe' => ['nullable', 'string', 'max:255'],
-            'date_naissance' => ['required', 'date'],
+            'date_naissance' => ['nullable', 'date'],
             'lieu_naissance' => ['nullable', 'string', 'max:255'],
-            'telephone' => [
-                'required',
-                'string',
-                'max:20',
-                'regex:/^\+243\d{9}$/',
-                Rule::unique('users')->where(fn ($query) => $query
-                    ->where('name', $this->name)
-                    ->where('postnom', $this->postnom)
-                    ->where('telephone', $this->telephone)),
-            ],
+            'telephone' => ['nullable', 'string'],
             'adresse_physique' => ['nullable', 'string'],
             'province' => ['nullable', 'string', 'max:255'],
             'ville' => ['nullable', 'string', 'max:255'],
@@ -264,8 +258,6 @@ class RegisterMember extends Component
             'date_naissance.required' => 'La date de naissance est obligatoire.',
             'date_naissance.date' => 'La date doit être valide.',
             'lieu_naissance.string' => 'Le lieu de naissance doit être une chaîne.',
-            'telephone.regex' => 'Le numéro doit commencer par +243 et contenir 9 chiffres.',
-            'telephone.unique' => 'Ce membre existe déjà (nom, post-nom, téléphone).',
             'adresse_physique.string' => 'L’adresse doit être une chaîne.',
             'email.required' => 'L’email est obligatoire.',
             'email.email' => 'L’email doit être valide.',
@@ -332,6 +324,7 @@ class RegisterMember extends Component
 
     public function edit($idUser)
     {
+
         try {
             $user = User::findOrFail($idUser);
 
@@ -403,18 +396,7 @@ class RegisterMember extends Component
                 'sexe' => ['nullable', 'string', 'max:255'],
                 'date_naissance' => ['required', 'date'],
                 'lieu_naissance' => ['nullable', 'string', 'max:255'],
-                'telephone' => [
-                    'required',
-                    'string',
-                    'max:20',
-                    'regex:/^\+243\d{9}$/',
-                    Rule::unique('users')
-                        ->ignore($this->userId)
-                        ->where(fn($query) => $query
-                            ->where('name', $this->name)
-                            ->where('postnom', $this->postnom)
-                            ->where('telephone', $this->telephone)),
-                ],
+                'telephone' => ['nullable', 'string'],
                 'adresse_physique' => ['nullable', 'string'],
                 'province' => ['nullable', 'string', 'max:255'],
                 'ville' => ['nullable', 'string', 'max:255'],
@@ -497,16 +479,16 @@ class RegisterMember extends Component
             do {
                 // Récupère le dernier code utilisateur
                 $lastAccount = User::whereNotNull('code')->orderByDesc('id')->first();
-                
+
                 // Extrait le numéro incrémental après "34" + année (à partir du 6ème caractère)
-                $number = $lastAccount 
-                    ? intval(substr($lastAccount->code, 6)) + 1 
+                $number = $lastAccount
+                    ? intval(substr($lastAccount->code, 6)) + 1
                     : 1;
-                
+
                 // Génère le code avec : "34" + année + numéro incrémental (10 chiffres)
                 $code = '85' . now()->format('Y') . str_pad($number, 10, '0', STR_PAD_LEFT);
             } while (User::where('code', $code)->exists()); // Vérifie l'unicité
-            
+
             return $code;
         } catch (\Throwable $th) {
             throw $th; // Relève l'erreur
@@ -538,6 +520,7 @@ class RegisterMember extends Component
                 'email', 'role', 'status',
                 'photo_profil', 'scan_piece'
             ]);
+            $this->editModal = false;
             $this->dispatch('openModal', name: 'modalMembre');
 
         } catch (Throwable $th) {

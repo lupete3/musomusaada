@@ -135,7 +135,8 @@
                                 <tr>
                                     <td>{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        @if ($transaction->type === 'Entrée de fonds')
+                                        @if ($transaction->type === 'Entrée de fonds' || $transaction->type === 'mise_quotidienne' || $transaction->type === 'vente_carte_adhesion'
+                                        )
                                             <span
                                                 class="badge bg-label-success me-1">{{ ucfirst($transaction->type) }}</span>
                                         @elseif ($transaction->type === 'virement vers caisse centrale')
@@ -192,7 +193,7 @@
         </div>
     </div>
 
-    @include('livewire.admin.add-cash-register')
+    {{-- @include('livewire.admin.add-cash-register')
 
     <div class="row mt-3">
         <div class="col-md-12">
@@ -201,5 +202,5 @@
         <div class="col-md-12 mt-4">
             <livewire:admin.exchange-rate-manager />
         </div>
-    </div>
+    </div> --}}
 </div>

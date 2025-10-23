@@ -1,14 +1,14 @@
 <!-- resources/views/livewire/register-member.blade.php -->
 <div class="mt-0">
 
-    @include('livewire.members.add-member')
+    {{-- @include('livewire.members.add-member') --}}
+    @include('livewire.members.add-member-short')
 
     <h3>Gestion des clients</h3>
 
     <!-- resources/views/livewire/view-registered-members.blade.php -->
     <div class="table-wrapper">
         <div class="card has-actions has-filter">
-
             <div class="card-header">
                 <div class="w-100 justify-content-between d-flex flex-wrap align-items-center gap-1">
 
@@ -18,7 +18,7 @@
                         <div class="table-search-input">
                             <div class="input-group input-group-merge">
                                 <span class="input-group-text" id="basic-addon-search31"><i class="icon-base bx bx-search"></i></span>
-                                <input type="search" wire:model.live="search" class="form-control" 
+                                <input type="search" wire:model.live="search" class="form-control"
                                 placeholder="Rechercher..." aria-label="Rechercher..." aria-describedby="basic-addon-search31">
                             </div>
                         </div>
@@ -49,9 +49,7 @@
                             <tr>
                                 <th>Code</th>
                                 <th>Nom</th>
-                                <th>Sexe</th>
-                                <th>Téléphone</th>
-                                <th>Status</th>
+                                <th>Postnom</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -59,16 +57,8 @@
                             @forelse ($members as $member)
                                 <tr>
                                     <td>{{ $member->code }}</td>
-                                    <td>{{ $member->name.' '.$member->postnom.' '.$member->prenom }}</td>
-                                    <td>{{ $member->sexe }}</td>
-                                    <td>{{ $member->telephone ?? '-' }}</td>
-                                    <td>
-                                        @if ($member->status)
-                                            <span class="badge bg-success">Actif</span>
-                                        @else
-                                            <span class="badge bg-danger">Inactif</span>
-                                        @endif
-                                    </td>
+                                    <td>{{ $member->name }}</td>
+                                    <td>{{ $member->postnom }}</td>
                                     <td>
                                         <div class="d-flex align-items-center gap-1">
                                             @if ($member->status)
@@ -89,7 +79,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">
+                                    <td colspan="4" class="text-center">
                                         <div class="alert alert-danger" role="alert">
                                             Aucun client correspondant trouvé dans le système.
                                         </div>
@@ -128,7 +118,6 @@
                 </div>
                 @endif
             </div>
-
         </div>
     </div>
 </div>

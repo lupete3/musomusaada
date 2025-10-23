@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string(column: 'name');
             $table->string('postnom');
             $table->string('prenom')->nullable();
-            $table->date('date_naissance');
-            $table->string('telephone');
+            $table->date('date_naissance')->nullable();
+            $table->string('telephone')->nullable();
             $table->enum('sexe', ['masculin', 'féminin'])->nullable();
             $table->text('adresse_physique')->nullable();
             $table->string('profession')->nullable();
