@@ -90,6 +90,7 @@ class AgentDashboard extends Component
             // Récupère tous les utilisateurs ayant des comptes liés
             $users = User::whereHas('roles', function ($q) {
             $q->where('name', '!=', 'membre');
+            $q->where('name', '!=', 'super it');
         })->get();
         } else {
             // Récupère uniquement le recouvreur connecté avec ses comptes
