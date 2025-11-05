@@ -3,14 +3,14 @@
 
     <div class="row mb-3">
         <div class="col-md-2">
-            <select wire:model.lazy="status" class="form-control" id="status">
+            <select wire:model.lazy="status" class="form-select" id="status">
                 <option value="">Tous les carnets</option>
                 <option value="open">En cours</option>
                 <option value="closed">Clôturé</option>
             </select>
         </div>
         <div class="col-md-2">
-            <select wire:model.lazy="currency" class="form-control">
+            <select wire:model.lazy="currency" class="form-select">
                 <option value="">Toutes les devises</option>
                 <option value="CDF">CDF</option>
                 <option value="USD">USD</option>
@@ -18,7 +18,7 @@
         </div>
 
         <div class="col-md-2">
-            <select wire:model.lazy="periodFilter" class="form-control">
+            <select wire:model.lazy="periodFilter" class="form-select">
                 <option value="">Toutes les périodes</option>
                 <option value="today">Aujourd'hui</option>
                 <option value="this_week">Cette semaine</option>
@@ -28,7 +28,7 @@
         </div>
 
         <div class="col-md-2">
-            <select wire:model.lazy="status" class="form-control">
+            <select wire:model.lazy="status" class="form-select">
                 <option value="">Touts les status</option>
                 <option value="open">Actif</option>
                 <option value="closed">Inactif</option>
@@ -134,9 +134,9 @@
                                 <td>
                                     {{ $pourcentage }}%
                                     <div class="progress bg-label-success" style="height: 6px;">
-                                        <div class="progress-bar bg-success" role="progressbar" 
-                                            style="width: {{ $pourcentage }}%" 
-                                            aria-valuenow="{{ $pourcentage }}" 
+                                        <div class="progress-bar bg-success" role="progressbar"
+                                            style="width: {{ $pourcentage }}%"
+                                            aria-valuenow="{{ $pourcentage }}"
                                             aria-valuemin="0" aria-valuemax="100">
                                         </div>
                                     </div>

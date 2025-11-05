@@ -161,12 +161,12 @@
                     </a>
                 </li>
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a wire:navigate href="{{ route('report.credit.overview') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-time"></i> <!-- Horloge pour "en cours" -->
                         <div data-i18n="Analytics">Rapport Crédits En Cours</div>
                     </a>
-                </li>
+                </li> --}}
                 <li class="menu-item">
                     <a wire:navigate href="{{ route('report.credit.followup') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-bar-chart"></i> <!-- Graphique pour rapports -->

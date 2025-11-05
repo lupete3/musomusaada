@@ -140,7 +140,7 @@ class UserManagement extends Component
         }
     }
 
-    public function update()
+    public function update()  
     {
         try {
             $status = (int) $this->status;
