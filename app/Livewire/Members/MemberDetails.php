@@ -210,7 +210,7 @@ class MemberDetails extends Component
                 'user_id'        => Auth::id(),
                 'type'           => 'mise_quotidienne',
                 'currency'       => $card->currency,
-                'amount'         => $this->amount,
+                'amount'         => $totalPaid,
                 'balance_after'  => $agentAccount->balance,
                 'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte #{$card->id}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,
@@ -221,7 +221,7 @@ class MemberDetails extends Component
                 'user_id'        => $card->member_id,
                 'type'           => 'mise_quotidienne',
                 'currency'       => $card->currency,
-                'amount'         => $this->amount,
+                'amount'         => $totalPaid,
                 'balance_after'  => $account->balance,
                 'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte #{$card->id}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,

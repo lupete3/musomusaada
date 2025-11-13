@@ -82,10 +82,11 @@
                                 <th>Membre</th>
                                 <th>Prix du carnet</th>
                                 <th>Montant quotidien</th>
-                                <th>Devise</th>
                                 <th>Date de début</th>
                                 <th>Date de fin</th>
+                                <th>Agent</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -97,15 +98,26 @@
                                     </td>
                                     <td>{{ number_format($card->price, 2) }} {{ $card->currency }}</td>
                                     <td>{{ number_format($card->subscription_amount, 2) }} {{ $card->currency }}</td>
-                                    <td>{{ $card->currency }}</td>
                                     <td>{{ \Carbon\Carbon::parse($card->start_date)->format('d/m/Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($card->end_date)->format('d/m/Y') }}</td>
+                                    <td>{{ optional($card->agent)->name. ' '.optional($card->agent)->postnom. ' '.optional($card->agent)->prenom ?? 'N/A' }}</td>
+
                                     <td>
                                         @if ($card->is_active)
                                             <span class="badge bg-success">Active</span>
                                         @else
                                             <span class="badge bg-secondary">Terminée</span>
                                         @endif
+                                    </td>
+                                    <td>
+                                        <button wire:click="showDetails({{ $card->id }})" class="btn btn-info btn-sm" title="Voir les détails de cette carte">
+                                            Voir
+                                        </button>
+                                        @can('modifier-carnet', App\Models\User::class)
+                                            <button wire:click="editCard({{ $card->id }})" class="btn btn-primary btn-sm" title="Modifier cette carte">
+                                                Modifier
+                                            </button>
+                                        @endcan
                                     </td>
                                 </tr>
                             @empty
@@ -129,4 +141,8 @@
             </div>
         </div>
     </div>
+
+        @include('livewire.editPurchaseCard')
+        @include('livewire.showPurchaseCard')
+
 </div>

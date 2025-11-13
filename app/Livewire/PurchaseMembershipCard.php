@@ -32,6 +32,23 @@ class PurchaseMembershipCard extends Component
     public $members = [];
     public $results = [];
 
+    public $agent_id;
+    public $agents;
+
+    public $showConfirmationModal = false;
+    public $selectedMemberName;
+
+    public $editModal = false;
+    public $editCardId;
+    public $edit_code;
+    public $edit_currency;
+    public $edit_price;
+    public $edit_subscription_amount;
+    public $edit_agent_id;
+
+    public $detailsModal = false;
+    public $detailsCard;
+
     protected $rules = [
         'member_id' => 'required|exists:users,id',
         'currency' => 'required|in:USD,CDF',
@@ -44,6 +61,7 @@ class PurchaseMembershipCard extends Component
         Gate::authorize('afficher-carnet', User::class);
 
         $this->members = User::where('role', 'membre')->get();
+        $this->agents = User::where('role', '!=','membre')->get();
     }
 
     public function updatedSearch()
@@ -117,6 +135,7 @@ class PurchaseMembershipCard extends Component
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'is_active' => true,
+                'user_id' => Auth::user()->id,
             ]);
 
             // Génération des 31 mises
@@ -238,6 +257,75 @@ class PurchaseMembershipCard extends Component
 
         // Format du code : 4 chiffres + "/" + année, ex: "0001/2025"
         return str_pad($nextNumber, 4, '0', STR_PAD_LEFT) . '/' . $year;
+    }
+
+    // Ouvre le modal de modification
+    public function editCard($cardId)
+    {
+        Gate::authorize('modifier-carnet', User::class);
+
+        $card = MembershipCard::find($cardId);
+
+        if (!$card) {
+            notyf()->error('Carte introuvable.');
+            return;
+        }
+
+        $this->editCardId = $card->id;
+        $this->edit_code = $card->code;
+        $this->edit_currency = $card->currency;
+        $this->edit_subscription_amount = $card->subscription_amount;
+        $this->edit_agent_id = $card->user_id;
+
+        $this->editModal = true;
+    }
+
+    // Validation et mise à jour
+    public function updateCard()
+    {
+        Gate::authorize('modifier-carnet', User::class);
+
+        $this->validate([
+            'edit_code' => 'required|string|unique:membership_cards,code,' . $this->editCardId,
+            'edit_currency' => 'required|string',
+            'edit_subscription_amount' => 'required|numeric|min:0',
+            'edit_agent_id' => 'nullable|exists:users,id',
+        ]);
+
+        $card = MembershipCard::find($this->editCardId);
+
+        if (!$card) {
+            notyf()->error('Carte introuvable.');
+            return;
+        }
+
+        $card->update([
+            'code' => $this->edit_code,
+            'currency' => $this->edit_currency,
+            'subscription_amount' => $this->edit_subscription_amount,
+            'user_id' => $this->edit_agent_id,
+        ]);
+
+        UserLogHelper::log_user_activity(
+            action: 'modification_carte_adhesion',
+            description: "Modification de la carte #{$card->id} ({$card->code}) du membre {$card->member->name}"
+        );
+
+        $this->editModal = false;
+        $this->reset(['editCardId', 'edit_code', 'edit_currency', 'edit_price', 'edit_subscription_amount', 'edit_agent_id']);
+        $this->dispatch('$refresh');
+        notyf()->success('Carte modifiée avec succès.');
+    }
+
+    public function showDetails($cardId)
+    {
+        $card = MembershipCard::find($cardId);
+        if (!$card) {
+            notyf()->error('Carte introuvable.');
+            return;
+        }
+        $this->detailsCard = $card;
+        $this->detailsModal = true;
     }
 
 }

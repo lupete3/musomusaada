@@ -3,21 +3,36 @@
 
     <div class="row mb-3">
         <div class="col-md-2">
+            <label>Agent</label>
+            <select wire:model.lazy="agent_id" class="form-select">
+                <option value="">-- Aucun --</option>
+                @foreach ($agents as $agent)
+                    <option value="{{ $agent->id }}">{{ $agent->name }} ({{ $agent->email }})
+                    </option>
+                @endforeach
+            </select>
+            @error('edit_agent_id')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+        <div class="col-md-2 mb-1">
+            <label>Status Carnet</label>
             <select wire:model.lazy="status" class="form-select" id="status">
                 <option value="">Tous les carnets</option>
                 <option value="open">En cours</option>
                 <option value="closed">Clôturé</option>
             </select>
         </div>
-        <div class="col-md-2">
+        {{-- <div class="col-md-2 mb-1">
             <select wire:model.lazy="currency" class="form-select">
                 <option value="">Toutes les devises</option>
                 <option value="CDF">CDF</option>
                 <option value="USD">USD</option>
             </select>
-        </div>
+        </div> --}}
 
-        <div class="col-md-2">
+        <div class="col-md-2 mb-1">
+            <label>Période</label>
             <select wire:model.lazy="periodFilter" class="form-select">
                 <option value="">Toutes les périodes</option>
                 <option value="today">Aujourd'hui</option>
@@ -27,7 +42,8 @@
             </select>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-2 mb-1">
+            <label>Status</label>
             <select wire:model.lazy="status" class="form-select">
                 <option value="">Touts les status</option>
                 <option value="open">Actif</option>
@@ -35,12 +51,16 @@
             </select>
         </div>
 
-        <div class="col-md-2">
-            <input type="number" min="0" max="31" wire:model.lazy="minDaysFilled" class="form-control" placeholder="Min jr remplis">
+        <div class="col-md-2 mb-1">
+            <label>Min Jour remplis</label>
+            <input type="number" min="0" max="31" wire:model.lazy="minDaysFilled" class="form-control"
+                placeholder="Min jr remplis">
         </div>
 
         <div class="col-md-2">
-            <input type="number" min="0" max="31" wire:model.lazy="exactDaysFilled" class="form-control" placeholder="Jours remplis exacts">
+            <label>Exact Jour remplis</label>
+            <input type="number" min="0" max="31" wire:model.lazy="exactDaysFilled" class="form-control"
+                placeholder="Jours remplis exacts">
         </div>
     </div>
 
@@ -69,14 +89,14 @@
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
                 <h6>Montant total à épargner</h6>
-                <h4>{{ number_format($totalToSave, 2).' '.$currency }}</h4>
+                <h4>{{ number_format($totalToSave, 2) . ' ' . $currency }}</h4>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
                 <h6>Montant total épargné</h6>
-                <h4>{{ number_format($totalSaved, 2).' '.$currency }}</h4>
+                <h4>{{ number_format($totalSaved, 2) . ' ' . $currency }}</h4>
             </div>
         </div>
 
@@ -93,7 +113,8 @@
             <h5>Liste des carnets filtrés ({{ $carnets->total() }} résultats)</h5>
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <input wire:model.live="search" type="text" placeholder="Recherche membre..." class="form-control" />
+                    <input wire:model.live="search" type="text" placeholder="Recherche membre..."
+                        class="form-control" />
                 </div>
                 <div class="col-md-3">
                     <select wire:model.lazy="currency" class="form-control">
@@ -118,6 +139,8 @@
                         <tr>
                             <th>Nom du membre</th>
                             <th>Montant/Jour</th>
+                            <th>Total Contribués</th>
+                            <th>Total Restants</th>
                             <th>Jours payés</th>
                             <th>Taux de remplissage</th>
                         </tr>
@@ -128,15 +151,17 @@
                                 $pourcentage = round(($carnet->contributed_days_count / 31) * 100, 1);
                             @endphp
                             <tr>
-                                <td>{{ $carnet->member->name.' '.$carnet->member->postnom.' '.$carnet->member->prenom ?? 'N/A' }}</td>
-                                <td>{{ number_format($carnet->subscription_amount, 2) }} {{$carnet->currency }}</td>
-                                <td>{{ $carnet->contributed_days_count }}</td>
+                                <td>{{ $carnet->member->name . ' ' . $carnet->member->postnom . ' ' . $carnet->member->prenom ?? 'N/A' }}
+                                </td>
+                                <td>{{ number_format($carnet->subscription_amount, 2) }} {{ $carnet->currency }}</td>
+                                <td>{{ number_format($carnet->getTotalSavedAttribute(), 2) }} {{ $carnet->currency }}</td>
+                                <td>{{ number_format($carnet->getTotalRemainingAttribute(), 2) }} {{ $carnet->currency }}</td>
+                                <td>{{ $carnet->contributed_days_count }} / 31</td>
                                 <td>
                                     {{ $pourcentage }}%
                                     <div class="progress bg-label-success" style="height: 6px;">
                                         <div class="progress-bar bg-success" role="progressbar"
-                                            style="width: {{ $pourcentage }}%"
-                                            aria-valuenow="{{ $pourcentage }}"
+                                            style="width: {{ $pourcentage }}%" aria-valuenow="{{ $pourcentage }}"
                                             aria-valuemin="0" aria-valuemax="100">
                                         </div>
                                     </div>

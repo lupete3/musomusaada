@@ -5,6 +5,7 @@ namespace App\Livewire\Repports;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\MembershipCard;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class RapportCarnetsComponent extends Component
@@ -28,10 +29,14 @@ class RapportCarnetsComponent extends Component
     public $totalContributedDays;
     public $status = ''; // 'open' ou 'closed'
 
+    public $agent_id;
+    public $agents = [];
+
 
     public function mount()
     {
         $this->updateStats();
+        $this->agents = User::where('role', '!=','membre')->get();
     }
 
     public function updated($field)
@@ -82,6 +87,10 @@ class RapportCarnetsComponent extends Component
             });
         }
 
+        if ($this->agent_id) {
+            $query->where('user_id', $this->agent_id);
+        }
+
         $carnets = $query->withCount(['contributions as contributed_days_count' => function ($q) {
             $q->where('is_paid', true);
         }])->get();
@@ -113,7 +122,7 @@ class RapportCarnetsComponent extends Component
             ->withCount(['contributions as contributed_days_count' => function ($q) {
                 $q->where('is_paid', true);
             }]);
-        
+
         if ($this->status === 'open') {
             $query->where('is_active', true);
         } elseif ($this->status === 'closed') {
@@ -122,6 +131,10 @@ class RapportCarnetsComponent extends Component
 
         if ($this->currency) {
             $query->where('currency', $this->currency);
+        }
+
+        if ($this->agent_id) {
+            $query->where('user_id', $this->agent_id);
         }
 
         if ($this->periodFilter) {
@@ -164,7 +177,6 @@ class RapportCarnetsComponent extends Component
 
         return $query->paginate($this->paginate);
     }
-
 
     public function exportPdf()
     {
@@ -210,6 +222,10 @@ class RapportCarnetsComponent extends Component
             });
         }
 
+        if ($this->agent_id) {
+            $carnets->where('user_id', $this->agent_id);
+        }
+
         // Filtrage par nombre de jours de contribution
         if ($this->minDaysFilled !== null) {
             $carnets->having('contributed_days_count', '>=', $this->minDaysFilled);
@@ -241,7 +257,6 @@ class RapportCarnetsComponent extends Component
             echo $pdf->stream();
         }, 'rapport-carnets.pdf');
     }
-
 
     public function render()
     {
