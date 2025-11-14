@@ -82,8 +82,9 @@
                                 <th>Membre</th>
                                 <th>Prix du carnet</th>
                                 <th>Montant quotidien</th>
-                                <th>Date de début</th>
-                                <th>Date de fin</th>
+                                <th>Total Epargnés</th>
+                                <th>Total Restants</th>
+                                <th>Date Création</th>
                                 <th>Agent</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -98,8 +99,9 @@
                                     </td>
                                     <td>{{ number_format($card->price, 2) }} {{ $card->currency }}</td>
                                     <td>{{ number_format($card->subscription_amount, 2) }} {{ $card->currency }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($card->start_date)->format('d/m/Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($card->end_date)->format('d/m/Y') }}</td>
+                                    <td>{{ number_format($card->total_remaining, 2) }} {{ $card->currency }}</td>
+                                    <td>{{ number_format($card->total_saved, 2) }} {{ $card->currency }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($card->created_at)->format('d/m/Y') }}</td>
                                     <td>{{ optional($card->agent)->name. ' '.optional($card->agent)->postnom. ' '.optional($card->agent)->prenom ?? 'N/A' }}</td>
 
                                     <td>
