@@ -88,28 +88,80 @@
                 <th>Date Crédit</th>
                 <th>Date Début</th>
                 <th>Date Fin</th>
+
                 <th>Montant Crédit</th>
-                <th>Montant payé</th>
-                <th>Interêt</th>
+                <th>Total à Rembourser</th>
+                <th>Déjà Payé</th>
+                <th>Différence</th>
+                <th>Reste</th>
+
                 <th>Pénalité</th>
+                <th>Agent Crédit</th>
                 <th>Status</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach ($credits as $credit)
+                @php
+                    // Solde du compte du client
+                    $balance = (float) ($credit->user->accounts->firstWhere('currency', $credit->currency)?->balance ?? 0);
+
+                    // Total à rembourser : somme des total_due
+                    $totalToRepay = $credit->repayments->sum('total_due');
+
+                    // Déjà payé = solde du compte
+                    $amountPaid = $balance;
+
+                    // Différence
+                    $diff = $amountPaid - $totalToRepay;
+
+                    // Reste
+                    $remaining = max(0, $totalToRepay - $amountPaid);
+                @endphp
+
                 <tr>
-                    <td>#{{ $credit->id }}</td>
-                    <td>{{ $credit->user->code }}</td>
-                    <td>{{ $credit->user->name.' '.$credit->user->postnom.' '.$credit->user->prenom ?? '' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($credit->created_at)->format('d/m/Y') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($credit->start_date)->format('d/m/Y') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($credit->due_date)->format('d/m/Y') }}</td>
-                    <td>{{ number_format($credit->amount, 2) }} {{ $credit->currency }}</td>
-                    <td>{{ number_format($credit->repayments->where('is_paid', true)->sum('paid_amount'), 2) }} {{ $credit->currency }}</td>
-                    <td>{{ number_format(($credit->amount * $credit->interest_rate / 100), 2) }} {{ $credit->currency }}</td>
-                    <td>{{ number_format($credit->repayments->sum('penalty'), 2) }} {{ $credit->currency }}</td>
-                    <td>{{ $credit->is_paid ? 'Remboursé' : 'En cours' }}</td>
-                </tr>
+                <td>#{{ $credit->id }}</td>
+                <td>{{ $credit->user->code }}</td>
+                <td>{{ $credit->user->name.' '.$credit->user->postnom.' '.$credit->user->prenom }}</td>
+
+                <td>{{ \Carbon\Carbon::parse($credit->created_at)->format('d/m/Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($credit->start_date)->format('d/m/Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($credit->due_date)->format('d/m/Y') }}</td>
+
+                <!-- Montant crédit -->
+                <td>{{ number_format($credit->amount, 2) }} {{ $credit->currency }}</td>
+
+                <!-- Total à rembourser -->
+                <td>{{ number_format($totalToRepay, 2) }} {{ $credit->currency }}</td>
+
+                <!-- Déjà payé (balance) -->
+                <td>{{ number_format($amountPaid, 2) }} {{ $credit->currency }}</td>
+
+                <!-- Différence -->
+                <td>
+                    @if ($diff >= 0)
+                        +{{ number_format($diff, 2) }} {{ $credit->currency }}
+                    @else
+                        {{ number_format($diff, 2) }} {{ $credit->currency }}
+                    @endif
+                </td>
+
+                <!-- Reste -->
+                <td>
+                    {{ number_format($remaining, 2) }} {{ $credit->currency }}
+                </td>
+
+                <!-- Pénalité -->
+                <td>{{ number_format($credit->repayments->sum('penalty'), 2) }} {{ $credit->currency }}</td>
+
+                <!-- Agent crédit -->
+                <td>{{ $credit->agent ? $credit->agent->name.' '.$credit->agent->postnom : 'N/A' }}</td>
+
+                <!-- Status -->
+                <td>{{ $credit->is_paid ? 'Remboursé' : 'En cours' }}</td>
+            </tr>
+
             @endforeach
         </tbody>
     </table>
@@ -122,6 +174,7 @@
                 <th>Total Crédits</th>
                 <th>Remboursés</th>
                 <th>En cours</th>
+                <th>Intérêt</th>
                 <th>Pénalités</th>
             </tr>
         </thead>
@@ -132,6 +185,7 @@
                     <td>{{ number_format($totals['totalByCurrency'][$curr] ?? 0, 2) }}</td>
                     <td>{{ number_format($totals['totalPaidByCurrency'][$curr] ?? 0, 2) }}</td>
                     <td>{{ number_format($totals['totalUnpaidByCurrency'][$curr] ?? 0, 2) }}</td>
+                    <td>{{ number_format($totals['interestByCurrency'][$curr] ?? 0, 2) }}</td>
                     <td>{{ number_format($totals['penaltyByCurrency'][$curr] ?? 0, 2) }}</td>
                 </tr>
             @endforeach

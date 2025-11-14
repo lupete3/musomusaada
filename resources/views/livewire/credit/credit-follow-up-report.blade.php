@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
             <div class="card border-danger h-100">
                 <div class="card-body">
                     <h6 class="card-title text-danger">En cours</h6>
@@ -36,7 +36,18 @@
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
+            <div class="card border-warning h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-warning">Intérêt</h6>
+                    @foreach ($totals['interestByCurrency'] as $curr => $total)
+                    <p class="card-text">{{ $curr }} : {{ number_format($total, 2) }}</p>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-2">
             <div class="card border-warning h-100">
                 <div class="card-body">
                     <h6 class="card-title text-warning">Pénalités</h6>
@@ -99,17 +110,39 @@
                             <th>Nom Membre</th>
                             <th>Date Crédit</th>
                             <th>Montant</th>
-                            <th>Solde Restant</th>
+
+                            <th>Total à Rembourser</th>
+                            <th>Déjà Payé</th>
+                            <th>Différence</th>
+                            <th>Reste</th>
+
                             <th>Pénalité</th>
                             <th>Status</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @forelse ($credits as $credit)
+                        @php
+                            // Solde réel du client
+                            $balance = (float) ($credit->user->accounts->firstWhere('currency', $credit->currency)?->balance ?? 0);
+
+                            // Total à rembourser (capital + intérêts)
+                            $totalToRepay = $credit->repayments->sum('total_due');
+
+                            // Déjà payé = ce qu’il a dans son compte
+                            $amountPaid = $balance;
+
+                            // Différence : positif = surplus, négatif = insuffisant
+                            $diff = $amountPaid - $totalToRepay;
+
+                            // Reste à payer (si négatif → il manque)
+                            $remaining = max(0, $totalToRepay - $amountPaid);
+                        @endphp
+
                         <tr>
                             <td>{{ $credit->id }}</td>
-                            <td>{{ $credit->user->code }}</td>
-                            <td>{{ $credit->user->name.' '.$credit->user->postnom.' '.$credit->user->prenom ?? '' }}
+                            <td>{{ $credit->user->code }} {{ $credit->user->name.' '.$credit->user->postnom.' '.$credit->user->prenom ?? '' }}
                             </td>
                             <td>{{ \Carbon\Carbon::parse($credit->start_date)->format('d/m/Y') }}</td>
                             <td>{{ number_format($credit->amount, 2) }} {{ $credit->currency }}</td>
@@ -122,10 +155,44 @@
                                 +{{ number_format(
                                 $credit->repayments->where('is_paid', true)->sum('paid_amount') - $credit->amount, 2
                                 ) }} {{ $credit->currency }}
-                                    
                                 @endif
-                                
                             </td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ number_format($totalToRepay, 2) }} {{ $credit->currency }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary" data-bs-toggle="tooltip" title="Solde disponible dans le compte du membre">
+                                    {{ number_format($amountPaid, 2) }} {{ $credit->currency }}
+                                </span>
+                            </td>
+
+                            <td>
+                                @if ($diff >= 0)
+                                    <span class="badge bg-success" data-bs-toggle="tooltip" title="Le membre dispose déjà de fonds suffisants pour rembourser">
+                                        +{{ number_format($diff, 2) }} {{ $credit->currency }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger" data-bs-toggle="tooltip" title="Fonds insuffisants — déficit">
+                                        {{ number_format($diff, 2) }} {{ $credit->currency }}
+                                    </span>
+                                @endif
+                            </td>
+
+                            <td>
+                                @if ($remaining > 0)
+                                    <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" title="Montant restant à payer">
+                                        {{ number_format($remaining, 2) }} {{ $credit->currency }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-success" data-bs-toggle="tooltip" title="Crédit totalement couvert grâce au solde du membre">
+                                        0.00 {{ $credit->currency }}
+                                    </span>
+                                @endif
+                            </td>
+
                             <td>
                                 {{ number_format(
                                 $credit->repayments->sum('penalty'), 2
@@ -141,7 +208,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center">Aucun crédit trouvé.</td>
+                            <td colspan="11" class="text-center">Aucun crédit trouvé.</td>
                         </tr>
                         @endforelse
                     </tbody>

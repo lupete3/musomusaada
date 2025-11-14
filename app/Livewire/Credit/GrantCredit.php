@@ -133,9 +133,10 @@ class GrantCredit extends Component
             ]);
 
             $mainCash->balance -= $this->amount;
-            $account->balance += $this->amount;
 
             $mainCash->save();
+
+            // $account->balance += $this->amount;
             $account->save();
 
             $credit = Credit::create([
@@ -237,7 +238,7 @@ class GrantCredit extends Component
                 ['user_id' => 2, 'currency' => $credit->currency],
                 ['balance' => 0]
             );
-            $cassisierAccount->balance += $this->amount;
+            // $cassisierAccount->balance += $this->amount;
             $cassisierAccount->save();
 
             // Enregistrement de la transaction pour commission crédit
@@ -253,16 +254,16 @@ class GrantCredit extends Component
             ]);
 
             // Enregistrement de la transaction pour commission crédit au caissier
-            Transaction::create([
-                'account_id' => null,
-                'agent_account_id' => $cassisierAccount->id,
-                'user_id' => 2,
-                'type' => 'frais_credit_pour_retrait',
-                'currency' => $credit->currency,
-                'amount' => $this->amount,
-                'balance_after' => $cassisierAccount->balance,
-                'description' => "Frais à retirer du dossier du credit #{$credit->id} - Montant: {$this->amount} {$credit->currency} du client {$member->name} {$member->postnom}",
-            ]);
+            // Transaction::create([
+            //     'account_id' => null,
+            //     'agent_account_id' => $cassisierAccount->id,
+            //     'user_id' => 2,
+            //     'type' => 'frais_credit_pour_retrait',
+            //     'currency' => $credit->currency,
+            //     'amount' => $this->amount,
+            //     'balance_after' => $cassisierAccount->balance,
+            //     'description' => "Frais à retirer du dossier du credit #{$credit->id} - Montant: {$this->amount} {$credit->currency} du client {$member->name} {$member->postnom}",
+            // ]);
 
             DB::commit();
 
