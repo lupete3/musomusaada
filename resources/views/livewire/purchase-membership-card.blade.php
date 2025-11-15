@@ -92,7 +92,7 @@
                         </thead>
                         <tbody>
                             @forelse ($cards as $index => $card)
-                                <tr class="@if (!$card->is_active) table-success @else table-danger @endif">
+                                <tr class="@if ($card->is_active) table-success @else table-danger @endif">
                                     <td>{{ $card->code }}</td>
                                     <td>{{ optional($card->member)->code ?? 'N/A' }} {{ optional($card->member)->name ?? 'N/A' }}
                                         {{ optional($card->member)->postnom ?? 'N/A' }} {{ optional($card->member)->prenom ?? 'N/A' }}
