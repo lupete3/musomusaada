@@ -115,11 +115,13 @@
                                         <button wire:click="showDetails({{ $card->id }})" class="btn btn-info btn-sm" title="Voir les détails de cette carte">
                                             Voir
                                         </button>
+                                        @if ($card->is_active)
                                         @can('modifier-carnet', App\Models\User::class)
                                             <button wire:click="editCard({{ $card->id }})" class="btn btn-primary btn-sm" title="Modifier cette carte">
                                                 Modifier
                                             </button>
                                         @endcan
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
