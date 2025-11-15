@@ -81,7 +81,7 @@
                                 <th>ID</th>
                                 <th>Membre</th>
                                 <th>Prix du carnet</th>
-                                <th>Montant quotidien</th>
+                                <th>Mise quotidiene</th>
                                 <th>Total Epargnés</th>
                                 <th>Total Restants</th>
                                 <th>Date Création</th>
@@ -92,7 +92,7 @@
                         </thead>
                         <tbody>
                             @forelse ($cards as $index => $card)
-                                <tr>
+                                <tr class="@if (!$card->is_active) table-danger @endif">
                                     <td>{{ $card->code }}</td>
                                     <td>{{ optional($card->member)->code ?? 'N/A' }} {{ optional($card->member)->name ?? 'N/A' }}
                                         {{ optional($card->member)->postnom ?? 'N/A' }} {{ optional($card->member)->prenom ?? 'N/A' }}
