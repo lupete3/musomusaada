@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label>Montant quotidien à épargner</label>
+                        <label>Mise</label>
                         <input type="number" step="0.01" wire:model="subscription_amount" class="form-control" />
                         @error('card_id') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
