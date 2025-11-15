@@ -81,7 +81,7 @@
                                 <th>ID</th>
                                 <th>Membre</th>
                                 <th>Prix du carnet</th>
-                                <th>Mise quotidiene</th>
+                                <th>Mise</th>
                                 <th>Total Epargnés</th>
                                 <th>Total Restants</th>
                                 <th>Date Création</th>

@@ -17,7 +17,7 @@
                                     {{ optional($detailsCard->member)->prenom ?? 'N/A' }}</p>
                                 <p><strong>Prix du carnet:</strong> {{ number_format($detailsCard->price, 2) }}
                                     {{ $detailsCard->currency }}</p>
-                                <p><strong>Montant quotidien:</strong> {{ number_format($detailsCard->subscription_amount, 2) }}
+                                <p><strong>Mise:</strong> {{ number_format($detailsCard->subscription_amount, 2) }}
                                     {{ $detailsCard->currency }}</p>
                                 <p><strong>Date de début:</strong>
                                     {{ \Carbon\Carbon::parse($detailsCard->start_date)->format('d/m/Y') }}</p>
