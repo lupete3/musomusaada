@@ -43,7 +43,7 @@
                                     {{ 31 - $detailsCard->getUnpaidContributionsAttribute()->count() }} / 31</p>
                                 <p><strong>Jours restants:</strong>
                                     {{ $detailsCard->getUnpaidContributionsAttribute()->count() }} / 31</p>
-                                <p><strong>Solde:</strong> {{ number_format($detailsCard->balance, 2) }}
+                                <p><strong>Solde:</strong> {{ number_format($detailsCard->total_saved - $detailsCard->subscription_amount, 2) }}
                                     {{ $detailsCard->currency }}</p>
                             </div>
 
