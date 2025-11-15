@@ -106,16 +106,14 @@
                     <thead class="table-warning">
                         <tr>
                             <th>ID Crédit</th>
-                            <th>Code Membre</th>
                             <th>Nom Membre</th>
                             <th>Date Crédit</th>
-                            <th>Montant</th>
-
+                            <th>Montant Crédit</th>
                             <th>Total à Rembourser</th>
                             <th>Déjà Payé</th>
-                            <th>Différence</th>
+                            {{-- <th>Différence</th> --}}
                             <th>Reste</th>
-
+                            <th>Interêt</th>
                             <th>Pénalité</th>
                             <th>Status</th>
                         </tr>
@@ -147,29 +145,25 @@
                             <td>{{ \Carbon\Carbon::parse($credit->start_date)->format('d/m/Y') }}</td>
                             <td>{{ number_format($credit->amount, 2) }} {{ $credit->currency }}</td>
                             <td>
-                                @if ($credit->amount - $credit->repayments->where('is_paid', true)->sum('paid_amount') > 0)
-                                {{ number_format(
-                                $credit->amount - $credit->repayments->where('is_paid', true)->sum('paid_amount'), 2
-                                ) }} {{ $credit->currency }}
-                                @else
-                                +{{ number_format(
-                                $credit->repayments->where('is_paid', true)->sum('paid_amount') - $credit->amount, 2
-                                ) }} {{ $credit->currency }}
-                                @endif
-                            </td>
-                            <td>
                                 <span class="badge bg-info">
                                     {{ number_format($totalToRepay, 2) }} {{ $credit->currency }}
                                 </span>
                             </td>
 
                             <td>
-                                <span class="badge bg-primary" data-bs-toggle="tooltip" title="Solde disponible dans le compte du membre">
+                                @if ($credit->is_paid == false)
+                                <span class="badge bg-danger" data-bs-toggle="tooltip" title="Fonds insuffisants — déficit">
                                     {{ number_format($amountPaid, 2) }} {{ $credit->currency }}
                                 </span>
+                                @else
+                                <span class="badge bg-success" data-bs-toggle="tooltip" title="Le crédit est totalement remboursé">
+                                    {{ number_format($totalToRepay, 2) }} {{ $credit->currency }}
+                                </span>
+                                @endif
+
                             </td>
 
-                            <td>
+                            {{-- <td>
                                 @if ($diff >= 0)
                                     <span class="badge bg-success" data-bs-toggle="tooltip" title="Le membre dispose déjà de fonds suffisants pour rembourser">
                                         +{{ number_format($diff, 2) }} {{ $credit->currency }}
@@ -179,7 +173,7 @@
                                         {{ number_format($diff, 2) }} {{ $credit->currency }}
                                     </span>
                                 @endif
-                            </td>
+                            </td> --}}
 
                             <td>
                                 @if ($remaining > 0)
@@ -192,7 +186,17 @@
                                     </span>
                                 @endif
                             </td>
-
+                            <td>
+                                @if ($credit->amount - $credit->repayments->where('is_paid', true)->sum('paid_amount') > 0)
+                                {{ number_format(
+                                0, 2
+                                ) }} {{ $credit->currency }}
+                                @else
+                                +{{ number_format(
+                                $credit->repayments->where('is_paid', true)->sum('paid_amount') - $credit->amount, 2
+                                ) }} {{ $credit->currency }}
+                                @endif
+                            </td>
                             <td>
                                 {{ number_format(
                                 $credit->repayments->sum('penalty'), 2
