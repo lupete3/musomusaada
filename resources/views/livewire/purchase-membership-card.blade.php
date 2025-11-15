@@ -82,8 +82,8 @@
                                 <th>Membre</th>
                                 <th>Prix du carnet</th>
                                 <th>Montant quotidien</th>
-                                <th>Total Epargnés</th>
                                 <th>Total Restants</th>
+                                <th>Total Epargnés</th>
                                 <th>Date Création</th>
                                 <th>Agent</th>
                                 <th>Status</th>
