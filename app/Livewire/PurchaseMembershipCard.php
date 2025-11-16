@@ -360,7 +360,7 @@ class PurchaseMembershipCard extends Component
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->stream();
-        }, 'Carnet-'.$card->code.'.pdf');
+        }, 'Carnet-'.$card->id.'.pdf');
     }
 
 }
