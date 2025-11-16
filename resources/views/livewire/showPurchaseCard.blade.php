@@ -5,6 +5,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Détails de la carte: {{ optional($card)->code ?? '' }}</h5>
+
                     <button type="button" class="btn-close" wire:click="$set('detailsModal', false)"></button>
                 </div>
                 <div class="modal-body">
@@ -45,6 +46,12 @@
                                     {{ $detailsCard->getUnpaidContributionsAttribute()->count() }} / 31</p>
                                 <p><strong>Solde:</strong> {{ number_format($detailsCard->total_saved - $detailsCard->subscription_amount, 2) }}
                                     {{ $detailsCard->currency }}</p>
+                                <button class="btn btn-warning btn-sm"
+                                        wire:click="exportPdf({{ $detailsCard->id }})" wire:loading.attr="disabled">
+                                    <i class="bx bx-file"></i>
+                                    <span wire:loading class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Exporter PDF
+                                </button>
                             </div>
 
                         <div class="card-body">

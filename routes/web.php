@@ -120,6 +120,10 @@ Route::middleware(['auth','auth.session','permission:retrait-compte-membre'])->g
     Route::get('/membres/retrait-carnet', [MembershipCardController::class, 'withdrawfromcard'])->name('members.withdrawfrom-card');
 });
 
+Route::middleware(['auth','auth.session','permission:afficher-rapport-credit'])->group(function () {
+    Route::get('/agents/commission', [MembershipCardController::class, 'commissions'])->name('agents.commissions');
+});
+
 Route::middleware(['auth','auth.session','permission:depot-compte-membre'])->group(function () {
     Route::get('/cloture-caisse', [ClotureController::class, 'index'])->name('agent.cloture');
     Route::get('/cloture-impression/{id}', [ClotureController::class, 'exportFiche'])->name('cloture.print');

@@ -5,6 +5,7 @@ namespace App\Livewire\Members;
 use App\Helpers\UserLogHelper;
 use App\Models\Account;
 use App\Models\AgentAccount;
+use App\Models\AgentCommission;
 use App\Models\MainCashRegister;
 use App\Models\MembershipCard;
 use Livewire\Component;
@@ -226,6 +227,39 @@ class MemberDetails extends Component
                 'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte #{$card->id}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,
             ]);
+
+            // --------------------------------------------------------
+            // COMMISSION AGENT : première mise dans ce carnet
+            // --------------------------------------------------------
+            $firstEverContribution = $card->contributions()
+                ->where('is_paid', true)
+                ->orderBy('contribution_date', 'asc')
+                ->first();
+
+            // Si c'est la toute première mise payée
+            if ($firstEverContribution && $firstEverContribution->id == $contributionsToPay->first()->id) {
+
+                $commissionAmount = $dailyAmount; // La première mise vaut commission
+
+                // Enregistrer dans l'historique des commissions
+                AgentCommission::create([
+                    'agent_id'    => Auth::id(), // L’agent connecté
+                    'type'        => 'carnet',
+                    'amount'      => $commissionAmount,
+                    'currency'    => $card->currency,
+                    'member_id'   => $card->member_id,
+                    'generated_at'=> now(),
+                ]);
+
+                // Mise à jour du compte agent
+                $agentAccountCommission = AgentAccount::firstOrCreate(
+                    ['user_id' => Auth::id(), 'currency' => $card->currency],
+                    ['balance' => 0]
+                );
+
+                $agentAccountCommission->balance += $commissionAmount;
+                $agentAccountCommission->save();
+            }
 
             UserLogHelper::log_user_activity(
                 action: 'mise_quotidienne',

@@ -10,6 +10,8 @@ use App\Models\AgentAccount;
 use App\Models\MainCashRegister;
 use App\Models\MembershipCard;
 use App\Models\Transaction;
+use App\Models\AgentCommission;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -62,6 +64,8 @@ class PurchaseMembershipCard extends Component
 
         $this->members = User::where('role', 'membre')->get();
         $this->agents = User::where('role', '!=','membre')->get();
+
+        $this->agent_id = Auth::id(); // Agent connecté
     }
 
     public function updatedSearch()
@@ -69,8 +73,7 @@ class PurchaseMembershipCard extends Component
         $query = trim($this->search);
 
         if ($query !== '') {
-            // Découper la recherche en mots séparés
-            $terms = preg_split('/\s+/', $query); // gère plusieurs espaces
+            $terms = preg_split('/\s+/', $query);
 
             $users = User::where('role', 'membre')
                 ->where(function ($mainQuery) use ($terms) {
@@ -106,26 +109,26 @@ class PurchaseMembershipCard extends Component
         }
     }
 
+
     public function submit()
     {
         Gate::authorize('ajouter-carnet', User::class);
 
         $this->validate();
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             // Récupération du membre
             $member = User::findOrFail($this->member_id);
 
-            // Définition des dates
+            // Dates
             $startDate = now();
-            $endDate = $startDate->copy()->addDays(30); // 31 jours incluant le jour de début
+            $endDate = $startDate->copy()->addDays(30);
 
-            // Génération automatique du code
+            // Génération du code unique
             $this->code = $this->generateCardCode();
 
-            // Création de la carte avec les dates
+            // Création du carnet
             $card = MembershipCard::create([
                 'code' => $this->code,
                 'member_id' => $member->id,
@@ -135,12 +138,10 @@ class PurchaseMembershipCard extends Component
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'is_active' => true,
-                'user_id' => Auth::user()->id,
+                'user_id' => Auth::id(), // agent vendeur
             ]);
 
-            // Génération des 31 mises
-            $startDate = now();
-
+            // Génération automatique des 31 mises
             for ($i = 0; $i < 31; $i++) {
                 $card->contributions()->create([
                     'membership_card_id' => $card->id,
@@ -149,48 +150,57 @@ class PurchaseMembershipCard extends Component
                     'is_paid' => false,
                 ]);
             }
-            // Débit du compte agent
-            $agentAccount = MainCashRegister::firstOrCreate(
-                ['currency' => 'CDF'],
+
+            /**
+             * 📌 CREDIT CAISSE PRINCIPALE : le prix du carnet
+             */
+            $cash = MainCashRegister::firstOrCreate(
+                ['currency' => $this->currency],
                 ['balance' => 0]
             );
-            $agentAccount->balance += $this->price;
-            $agentAccount->save();
+            $cash->increment('balance', $this->price);
 
-            // Débit du compte agent des profits des carnets
-            $membershipCardAccount = AgentAccount::firstOrCreate(
-                ['user_id' => 8, 'currency' => 'CDF'],
-                ['balance' => 0]
-            );
-            $membershipCardAccount->balance += $this->price;
-            $membershipCardAccount->save();
-
-            // Enregistrement de la transaction
             Transaction::create([
                 'account_id' => null,
-                'user_id' => Auth::user()->id,
+                'user_id' => Auth::id(),
                 'type' => 'vente_carte_adhesion',
-                'currency' => 'CDF',
+                'currency' => $this->currency,
                 'amount' => $this->price,
-                'balance_after' => $agentAccount->balance,
-                'description' => "Vente de carte à {$member->name} - Montant: {$this->price} CDF",
+                'balance_after' => $cash->balance,
+                'description' => "Vente de carte à {$member->name} - Montant: {$this->price} {$this->currency}",
             ]);
 
-            // Enregistrement de la transaction dans le compte 8
+            /**
+             * 📌 COMMISSION AGENT : vente de carte
+             */
+            AgentCommission::create([
+                'agent_id' => Auth::id(),
+                'type' => 'carte',
+                'amount' => $this->price, // ou montant fixe = 500
+                'member_id' => $member->id,
+                'commission_date' => now(),
+            ]);
+
+            // Crédite aussi le compte agent pour traçabilité
+            $agentAccount = AgentAccount::firstOrCreate(
+                ['user_id' => Auth::id(), 'currency' => $this->currency],
+                ['balance' => 0]
+            );
+            $agentAccount->increment('balance', $this->price);
+
             Transaction::create([
-                'account_id' => null,
-                'agent_account_id' => $membershipCardAccount->id,
-                'user_id' => 8,
-                'type' => 'vente_carte_adhesion',
-                'currency' => 'CDF',
+                'agent_account_id' => $agentAccount->id,
+                'user_id' => Auth::id(),
+                'type' => 'commission_carte',
+                'currency' => $this->currency,
                 'amount' => $this->price,
-                'balance_after' => $membershipCardAccount->balance,
-                'description' => "Vente de carte à {$member->name} - Montant: {$this->price} CDF",
+                'balance_after' => $agentAccount->balance,
+                'description' => "Commission vente carte pour {$member->name}",
             ]);
 
             UserLogHelper::log_user_activity(
                 action: 'achat_carte_adhesion',
-                description: "Achat de la carte #{$card->id} pour le membre {$member->name} {$member->postnom} ({$member->code}), montant total {$this->price} {$this->currency}"
+                description: "Achat de la carte #{$card->code} pour {$member->name} {$member->postnom} ({$member->code}), montant {$this->price} {$this->currency}"
             );
 
             DB::commit();
@@ -202,15 +212,16 @@ class PurchaseMembershipCard extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             dd($e->getMessage());
-            notyf()->error("Cette carte existe déjà");
+            notyf()->error("Une erreur est survenue.");
         }
     }
+
+
 
     public function render()
     {
         $cards = MembershipCard::with('member')
             ->when($this->searchCard, function ($query) {
-                // Découpe la recherche en plusieurs termes (séparés par espace)
                 $terms = explode(' ', $this->searchCard);
 
                 $query->where(function ($mainQuery) use ($terms) {
@@ -237,29 +248,26 @@ class PurchaseMembershipCard extends Component
         ]);
     }
 
+
     private function generateCardCode()
     {
         $year = now()->year;
 
-        // Récupérer la dernière carte créée pour l'année en cours
         $lastCard = MembershipCard::whereYear('created_at', $year)
             ->orderByDesc('id')
             ->first();
 
-        // Si aucune carte n’existe encore pour cette année
         if (!$lastCard) {
             $nextNumber = 1;
         } else {
-            // Extraire la partie numérique avant le slash du code (ex: "0001" dans "0001/2025")
             $lastNumber = (int) explode('/', $lastCard->code)[0];
             $nextNumber = $lastNumber + 1;
         }
 
-        // Format du code : 4 chiffres + "/" + année, ex: "0001/2025"
         return str_pad($nextNumber, 4, '0', STR_PAD_LEFT) . '/' . $year;
     }
 
-    // Ouvre le modal de modification
+
     public function editCard($cardId)
     {
         Gate::authorize('modifier-carnet', User::class);
@@ -280,7 +288,6 @@ class PurchaseMembershipCard extends Component
         $this->editModal = true;
     }
 
-    // Validation et mise à jour
     public function updateCard()
     {
         Gate::authorize('modifier-carnet', User::class);
@@ -308,11 +315,14 @@ class PurchaseMembershipCard extends Component
 
         UserLogHelper::log_user_activity(
             action: 'modification_carte_adhesion',
-            description: "Modification de la carte #{$card->id} ({$card->code}) du membre {$card->member->name}"
+            description: "Modification carte #{$card->code} du membre {$card->member->name}"
         );
 
         $this->editModal = false;
-        $this->reset(['editCardId', 'edit_code', 'edit_currency', 'edit_price', 'edit_subscription_amount', 'edit_agent_id']);
+        $this->reset([
+            'editCardId', 'edit_code', 'edit_currency',
+            'edit_price', 'edit_subscription_amount', 'edit_agent_id'
+        ]);
         $this->dispatch('$refresh');
         notyf()->success('Carte modifiée avec succès.');
     }
@@ -326,6 +336,31 @@ class PurchaseMembershipCard extends Component
         }
         $this->detailsCard = $card;
         $this->detailsModal = true;
+    }
+
+    public function exportPdf($cardId)
+    {
+        $card = MembershipCard::with(['member', 'contributions'])->find($cardId);
+
+        if (!$card) {
+            notyf()->error('Carte introuvable.');
+            return;
+        }
+
+        $contributions = $card->contributions()->orderBy('contribution_date')->get();
+        $paidContributions = $card->contributions->where('is_paid', 1);
+        $unpaidCount = $card->getUnpaidContributionsAttribute()->count();
+
+        $pdf = Pdf::loadView('pdf.carnet-details', [
+            'card' => $card,
+            'member' => $card->member,
+            'paidContributions' => $paidContributions,
+            'unpaidCount' => $unpaidCount,
+        ])->setPaper('A4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->stream();
+        }, 'Carnet-'.$card->code.'.pdf');
     }
 
 }

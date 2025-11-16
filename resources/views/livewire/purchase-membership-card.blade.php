@@ -76,7 +76,7 @@
                 <!-- Tableau des cartes -->
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped">
-                        <thead class="table-light">
+                        <thead class="table-warning" >
                             <tr>
                                 <th>ID</th>
                                 <th>Membre</th>
@@ -103,7 +103,6 @@
                                     <td>{{ number_format($card->total_remaining, 2) }} {{ $card->currency }}</td>
                                     <td>{{ \Carbon\Carbon::parse($card->created_at)->format('d/m/Y') }}</td>
                                     <td>{{ optional($card->agent)->name. ' '.optional($card->agent)->postnom. ' '.optional($card->agent)->prenom ?? 'N/A' }}</td>
-
                                     <td>
                                         @if ($card->is_active)
                                             <span class="badge bg-success">Active</span>

@@ -19,4 +19,9 @@ class MembershipCardController extends Controller
     {
         return view('withdrawfromcard');
     }
+
+    public function commissions()
+    {
+        return view('agentcommissions');
+    }
 }
