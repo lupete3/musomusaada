@@ -131,15 +131,15 @@
         </li> --}}
         @endcan
 
+
+
+        @can('afficher-rapport-credit')
         <li class="menu-item @if (request()->routeIs('repayments.simulation')) active @endif">
             <a wire:navigate href="{{ route('agents.commissions') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calculator"></i>
                 <div data-i18n="Analytics">Commission Agents</div>
             </a>
         </li>
-        
-        @can('afficher-rapport-credit')
-
         <li class="menu-item @if (request()->routeIs('rapports.clients','rapports.carnets'))
             active @endif" wire:ignore.self>
             <a class="menu-link menu-toggle">
