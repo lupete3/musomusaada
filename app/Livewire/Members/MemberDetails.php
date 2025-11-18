@@ -241,6 +241,15 @@ class MemberDetails extends Component
 
                 $commissionAmount = $dailyAmount; // La première mise vaut commission
 
+                // Créditer le compte du membre et de l'agent
+                $account = Account::firstOrCreate(
+                    ['user_id' => $card->member_id, 'currency' => $card->currency],
+                    ['balance' => 0]
+                );
+
+                $account->balance -= $commissionAmount;
+                $account->save();
+
                 // Enregistrer dans l'historique des commissions
                 AgentCommission::create([
                     'agent_id'    => Auth::id(), // L’agent connecté
