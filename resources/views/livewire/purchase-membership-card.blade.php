@@ -124,7 +124,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="9" class="text-center">Aucune carte trouvée.</td></tr>
+                                <tr><td colspan="10" class="text-center">Aucune carte trouvée.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

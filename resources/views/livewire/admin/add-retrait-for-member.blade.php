@@ -77,7 +77,7 @@
                                     <option value="">Sélectionner une carte</option>
                                     @foreach ($cards as $card)
                                         <option value="{{ $card->id }}">
-                                            {{ $card->currency }} - Total épargné : {{ number_format($card->total_saved, 2) }}
+                                            Carte #{{ $card->code }} | {{ $card->currency }} - Total épargné : {{ number_format($card->total_saved, 2) }}
                                             (Fin: {{ \Carbon\Carbon::parse($card->end_date)->format('d/m/Y') }})
                                         </option>
                                     @endforeach

@@ -213,7 +213,7 @@ class MemberDetails extends Component
                 'currency'       => $card->currency,
                 'amount'         => $totalPaid,
                 'balance_after'  => $agentAccount->balance,
-                'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte #{$card->id}
+                'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte {$card->code}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,
             ]);
 
@@ -224,7 +224,7 @@ class MemberDetails extends Component
                 'currency'       => $card->currency,
                 'amount'         => $totalPaid,
                 'balance_after'  => $account->balance,
-                'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte #{$card->id}
+                'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte {$card->code}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,
             ]);
 
@@ -272,7 +272,7 @@ class MemberDetails extends Component
 
             UserLogHelper::log_user_activity(
                 action: 'mise_quotidienne',
-                description: "Paiement de {$contributionsToPay->count()} mises pour la carte #{$card->id} du membre {$card->member->name} {$card->member->postnom} ({$card->member->code})",
+                description: "Paiement de {$contributionsToPay->count()} mises pour la carte {$card->code} du membre {$card->member->name} {$card->member->postnom} ({$card->member->code})",
             );
 
             DB::commit();
@@ -425,10 +425,10 @@ class MemberDetails extends Component
                 return;
             }
 
-            $aretenir = $card->subscription_amount;
+            // $aretenir = $card->subscription_amount;
 
             // Retirer la mise totale
-            $total = $card->contributions->where('is_paid', true)->sum('amount');
+            $total = $card->contributions->where('is_paid', true)->sum('amount') - $card->subscription_amount;
 
             // Ajouter au compte du membre
             $account = Account::where('user_id', $card->member_id)
@@ -449,10 +449,10 @@ class MemberDetails extends Component
             );
 
             // Récupération de la caisse pour les retenus de mise
-            $retenuMiseAccount = AgentAccount::firstOrCreate(
-                ['user_id' => 10, 'currency' => $card->currency],
-                ['balance' => 0]
-            );
+            // $retenuMiseAccount = AgentAccount::firstOrCreate(
+            //     ['user_id' => 10, 'currency' => $card->currency],
+            //     ['balance' => 0]
+            // );
 
             if ($agentAccount->balance < $total) {
                 DB::rollBack();
@@ -461,13 +461,14 @@ class MemberDetails extends Component
             }
 
             $account->balance -= $total;
-            $agentAccount->balance -= ($total - $aretenir);
-            $retenuMiseAccount->balance += $aretenir;
+            $agentAccount->balance -= ($total);
+            // $agentAccount->balance -= ($total - $aretenir);
+            // $retenuMiseAccount->balance += $aretenir;
 
             $account->save();
             $agentAccount->save();
             // Credite du compte retenu mise
-            $retenuMiseAccount->save();
+            // $retenuMiseAccount->save();
 
             // Marquer comme retiré
             $card->is_active = 0;
@@ -479,9 +480,9 @@ class MemberDetails extends Component
                 'user_id' => $card->member_id,
                 'type' => 'retrait_carte_adhesion',
                 'currency' => $card->currency,
-                'amount' => $total - $aretenir,
+                'amount' => $total,
                 'balance_after' => $account->balance,
-                'description' => $this->description ?: "Retrait carnet #{$card->id} " . $card->member->code ." ". $card->member->name . " " . $card->member->postnom . " Retenu de ". $aretenir. " ".$card->currency. " par " . Auth::user()->name,
+                'description' => $this->description ?: "Retrait carnet {$card->code} " . $card->member->code ." ". $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
             ]);
 
             // Enregistrer la transaction
@@ -490,26 +491,26 @@ class MemberDetails extends Component
                 'user_id' => Auth::user()->id,
                 'type' => 'retrait_carte_adhesion',
                 'currency' => $card->currency,
-                'amount' => $total - $aretenir,
+                'amount' => $total,
                 'balance_after' => $agentAccount->balance,
-                'description' => $this->description ?: "Retrait carnet #{$card->id} " . " Client: " . $card->member->code ." ". $card->member->name . " " . $card->member->postnom . " Retenu de ". $aretenir. " ".$card->currency. " par " . Auth::user()->name,
+                'description' => $this->description ?: "Retrait carnet {$card->code} " . " Client: " . $card->member->code ." ". $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
 
             ]);
 
-            Transaction::create([
-                'account_id' => null,
-                'user_id' => 10,
-                'type' => 'depot',
-                'currency' => $card->currency,
-                'amount' => $aretenir,
-                'balance_after' => $retenuMiseAccount->balance,
-                'description' => $this->description ?: "Entree Retenu de la carte #{$card->id} du compte " . $card->member->code . " Client: " . $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
+            // Transaction::create([
+            //     'account_id' => null,
+            //     'user_id' => 10,
+            //     'type' => 'depot',
+            //     'currency' => $card->currency,
+            //     'amount' => $aretenir,
+            //     'balance_after' => $retenuMiseAccount->balance,
+            //     'description' => $this->description ?: "Entree Retenu de la carte #{$card->id} du compte " . $card->member->code . " Client: " . $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
 
-            ]);
+            // ]);
 
             UserLogHelper::log_user_activity(
                 action: 'retrait_carte_adhesion',
-                description: "Retrait de la carte #{$card->id} du membre {$card->member->name} {$card->member->postnom} ({$card->member->code}), montant total {$total} {$card->currency}, retenu de {$aretenir} {$card->currency}",
+                description: "Retrait de la carte #{$card->id} du membre {$card->member->name} {$card->member->postnom} ({$card->member->code}), montant total {$total} {$card->currency}",
             );
 
             DB::commit();
@@ -523,6 +524,7 @@ class MemberDetails extends Component
         } catch (\Throwable $th) {
             DB::rollBack();
             report($th);
+            dd($th);
             notyf()->error('Une erreur est survenue lors du retrait. Veuillez réessayer plus tard.');
         }
     }
