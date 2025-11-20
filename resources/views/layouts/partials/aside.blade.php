@@ -62,7 +62,7 @@
         </li> --}}
         @endcan
 
-        @can('afficher-rapport-credit')
+        @can('ajouter-credit')
             <li class="menu-item @if (request()->routeIs('report.credit.overview','report.credit.followup','credit.grant'))
                 active @endif" wire:ignore.self>
                 <a class="menu-link menu-toggle">
