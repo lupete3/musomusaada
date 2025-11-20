@@ -64,8 +64,8 @@ class AgentCommissionOverview extends Component
             $commissionCarnets = (clone $agentQuery)->where('type', 'carnet')->sum('amount');
             $totalGeneralAgent = $totalCartesVendus + $commissionCarnets;
 
-            $agentPart = $totalGeneralAgent * 0.40;
-            $bureauPart = $totalGeneralAgent * 0.60;
+            $agentPart = $commissionCarnets * 0.40;
+            $bureauPart = $commissionCarnets * 0.60;
 
             $synthese[] = [
                 'agent' => $agent,
@@ -130,8 +130,8 @@ class AgentCommissionOverview extends Component
             $commissionCarnets = (clone $agentQuery)->where('type','carnet')->sum('amount');
             $totalGeneralAgent = $totalCartesVendus + $commissionCarnets;
 
-            $agentPart = $totalGeneralAgent * 0.40;
-            $bureauPart = $totalGeneralAgent * 0.60;
+            $agentPart = $commissionCarnets * 0.40;
+            $bureauPart = $commissionCarnets * 0.60;
 
             $synthese[] = [
                 'agent' => $agent,
