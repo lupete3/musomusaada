@@ -57,7 +57,7 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label>Taux d'intérêt (%)</label>
                         <input type="number" step="0.01" wire:model="interest_rate" class="form-control" />
                         @error('interest_rate')
@@ -65,15 +65,15 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    {{-- <div class="col-md-3 mb-3">
                         <label>Frais du dossier (%)</label>
                         <input type="number" step="0.01" wire:model="frais_dossier" class="form-control" />
                         @error('frais_dossier')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
-                    </div>
+                    </div> --}}
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label>Fréquence des échéances</label>
                         <select wire:model="frequency" class="form-control">
                             <option value="daily">Quotidienne</option>
@@ -82,7 +82,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label>Nombre d'échéances</label>
                         <input type="number" wire:model="installments" class="form-control" />
                         @error('installments')

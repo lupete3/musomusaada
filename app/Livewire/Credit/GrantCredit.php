@@ -20,12 +20,12 @@ use Illuminate\Support\Facades\Gate;
 class GrantCredit extends Component
 {
     public $member_id;
-    public $currency = 'USD';
+    public $currency = 'CDF';
     public $amount = 0;
     public $interest_rate = 5.0; // %
-    public $installments = 6;
+    public $installments = 2;
     public $start_date;
-    public $frequency = 'daily'; // 'daily', 'monthly', 'weekly'
+    public $frequency = 'monthly'; // 'daily', 'monthly', 'weekly'
     public $frais_dossier = 0;
 
     public $description = '';
@@ -106,20 +106,23 @@ class GrantCredit extends Component
             $creditFrisFix = round($this->amount * ($this->frais_dossier / 100), 2);
             //$creditFris = round($this->amount * ($this->interest_rate / 100), 2);
 
-            if ($account->balance < $creditFrisFix) {
-                DB::rollBack();
-                notyf()->error(__('Solde insuffisant dans le compte client pour payer les frais du dossier'));
-                return;
-            }
+            // if ($account->balance < $creditFrisFix) {
+            //     DB::rollBack();
+            //     notyf()->error(__('Solde insuffisant dans le compte client pour payer les frais du dossier'));
+            //     return;
+            // }
 
-            if ($mainCash->balance < $this->amount) {
-                DB::rollBack();
-                notyf()->error(__('Solde insuffisant dans la caisse centrale.'));
-                return;
-            }
+            // if ($mainCash->balance < $this->amount) {
+            //     DB::rollBack();
+            //     notyf()->error(__('Solde insuffisant dans la caisse centrale.'));
+            //     return;
+            // }
 
             $account->balance -= $creditFrisFix;
             $account->save();
+
+            if($creditFrisFix > 0)
+            {
 
             // Frais dossier
             Transaction::create([
@@ -132,12 +135,13 @@ class GrantCredit extends Component
                 'description' => "Frais de commission du dossier du credit. Montant: {$creditFrisFix} {$this->currency} octroyé à {$member->name} {$member->postnom}",
             ]);
 
-            $mainCash->balance -= $this->amount;
+            }
 
-            $mainCash->save();
+            // $mainCash->balance -= $this->amount;
 
-            // $account->balance += $this->amount;
-            $account->save();
+            // $mainCash->save();
+            // // $account->balance += $this->amount;
+            // $account->save();
 
             $credit = Credit::create([
                 'user_id'       => $member->id,
