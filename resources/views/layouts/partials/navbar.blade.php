@@ -42,7 +42,7 @@
                                         @else
                                             <img src="{{ asset('user.png') }}" alt="Photo par défaut" class="w-px-40 h-auto rounded-circle">
                                         @endif
-                                        
+
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
@@ -56,12 +56,12 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('profile') }}" wire:navigate>
+                        <a class="dropdown-item" href="{{ route('profile') }}" >
                             <i class="bx bx-user me-2"></i>
                             <span class="align-middle">Mon Profil</span>
                         </a>
                     </li>
-                    
+
                     <li>
                         <div class="dropdown-divider"></div>
                     </li>
