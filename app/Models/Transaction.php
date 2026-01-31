@@ -11,8 +11,16 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'account_id', 'agent_account_id', 'user_id', 'credit_id',
-        'type', 'currency', 'amount', 'balance_after', 'description'
+        'account_id',
+        'agent_account_id',
+        'user_id',
+        'credit_id',
+        'membership_card_id',
+        'type',
+        'currency',
+        'amount',
+        'balance_after',
+        'description'
     ];
 
     public function account()
@@ -35,10 +43,15 @@ class Transaction extends Model
         return $this->belongsTo(Credit::class);
     }
 
+    public function membershipCard()
+    {
+        return $this->belongsTo(MembershipCard::class);
+    }
+
     public function paired()
     {
         return $this->hasOne(Transaction::class, 'created_at', 'created_at')
-                    ->where('type', 'conversion_entree')
-                    ->where('user_id', $this->user_id);
+            ->where('type', 'conversion_entree')
+            ->where('user_id', $this->user_id);
     }
 }

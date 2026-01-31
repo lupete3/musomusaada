@@ -87,24 +87,24 @@ class MemberDetails extends Component
 
             // Création de la transaction
             $transaction = Transaction::create([
-                'account_id'     => null,
-                'user_id'        => Auth::id(),
-                'type'           => 'dépôt',
-                'currency'       => $this->currency,
-                'amount'         => $this->amount,
-                'balance_after'  => $agentAccount->balance,
-                'description'    => $this->description ?: "DEPOT du compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " par " . Auth::user()->name,
+                'account_id' => null,
+                'user_id' => Auth::id(),
+                'type' => 'dépôt',
+                'currency' => $this->currency,
+                'amount' => $this->amount,
+                'balance_after' => $agentAccount->balance,
+                'description' => $this->description ?: "DEPOT du compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " par " . Auth::user()->name,
             ]);
 
             // Création de la transaction
             $transaction = Transaction::create([
-                'account_id'     => $account->id,
-                'user_id'        => $user->id,
-                'type'           => 'dépôt',
-                'currency'       => $this->currency,
-                'amount'         => $this->amount,
-                'balance_after'  => $account->balance,
-                'description'    => $this->description ?: "DEPOT dans votre compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " par " . Auth::user()->name,
+                'account_id' => $account->id,
+                'user_id' => $user->id,
+                'type' => 'dépôt',
+                'currency' => $this->currency,
+                'amount' => $this->amount,
+                'balance_after' => $account->balance,
+                'description' => $this->description ?: "DEPOT dans votre compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " par " . Auth::user()->name,
             ]);
 
             UserLogHelper::log_user_activity(
@@ -207,23 +207,25 @@ class MemberDetails extends Component
             $account->save();
 
             Transaction::create([
-                'account_id'     => null,
-                'user_id'        => Auth::id(),
-                'type'           => 'mise_quotidienne',
-                'currency'       => $card->currency,
-                'amount'         => $totalPaid,
-                'balance_after'  => $agentAccount->balance,
+                'account_id' => null,
+                'user_id' => Auth::id(),
+                'type' => 'mise_quotidienne',
+                'currency' => $card->currency,
+                'amount' => $totalPaid,
+                'balance_after' => $agentAccount->balance,
+                'membership_card_id' => $card->id,
                 'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte {$card->code}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,
             ]);
 
             $transaction = Transaction::create([
-                'account_id'     => $account->id,
-                'user_id'        => $card->member_id,
-                'type'           => 'mise_quotidienne',
-                'currency'       => $card->currency,
-                'amount'         => $totalPaid,
-                'balance_after'  => $account->balance,
+                'account_id' => $account->id,
+                'user_id' => $card->member_id,
+                'type' => 'mise_quotidienne',
+                'currency' => $card->currency,
+                'amount' => $totalPaid,
+                'balance_after' => $account->balance,
+                'membership_card_id' => null,
                 'description' => "Paiement groupé de {$contributionsToPay->count()} mises sur la carte {$card->code}
                                 pour le client: {$card->member->name} {$card->member->postnom} par " . Auth::user()->name,
             ]);
@@ -252,12 +254,12 @@ class MemberDetails extends Component
 
                 // Enregistrer dans l'historique des commissions
                 AgentCommission::create([
-                    'agent_id'    => Auth::id(), // L’agent connecté
-                    'type'        => 'carnet',
-                    'amount'      => $commissionAmount,
-                    'currency'    => $card->currency,
-                    'member_id'   => $card->member_id,
-                    'generated_at'=> now(),
+                    'agent_id' => Auth::id(), // L’agent connecté
+                    'type' => 'carnet',
+                    'amount' => $commissionAmount,
+                    'currency' => $card->currency,
+                    'member_id' => $card->member_id,
+                    'generated_at' => now(),
                 ]);
 
                 // Mise à jour du compte agent
@@ -356,7 +358,7 @@ class MemberDetails extends Component
                 'currency' => $this->currency,
                 'amount' => $this->amount,
                 'balance_after' => $agentAccount->balance,
-                'description' => $this->description ?: "RETRAIT du compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " Retenu de ". $this->a_retenir. " ".$this->currency." par " . Auth::user()->name,
+                'description' => $this->description ?: "RETRAIT du compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " Retenu de " . $this->a_retenir . " " . $this->currency . " par " . Auth::user()->name,
             ]);
 
             // Création de la transaction
@@ -367,7 +369,7 @@ class MemberDetails extends Component
                 'currency' => $this->currency,
                 'amount' => $this->amount,
                 'balance_after' => $account->balance,
-                'description' => $this->description ?: "RETRAIT dans votre compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " Retenu de ". $this->a_retenir. " ".$this->currency." par " . Auth::user()->name,
+                'description' => $this->description ?: "RETRAIT dans votre compte " . $user->code . " Client: " . $user->name . " " . $user->postnom . " Retenu de " . $this->a_retenir . " " . $this->currency . " par " . Auth::user()->name,
             ]);
 
             if (
@@ -421,7 +423,7 @@ class MemberDetails extends Component
             $card = MembershipCard::findOrFail($this->card_id);
 
             if ($card->is_active == 0) {
-                notyf()->error( 'Retrait déjà effectué.');
+                notyf()->error('Retrait déjà effectué.');
                 return;
             }
 
@@ -482,7 +484,8 @@ class MemberDetails extends Component
                 'currency' => $card->currency,
                 'amount' => $total,
                 'balance_after' => $account->balance,
-                'description' => $this->description ?: "Retrait carnet {$card->code} " . $card->member->code ." ". $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
+                'membership_card_id' => null,
+                'description' => $this->description ?: "Retrait carnet {$card->code} " . $card->member->code . " " . $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
             ]);
 
             // Enregistrer la transaction
@@ -493,7 +496,8 @@ class MemberDetails extends Component
                 'currency' => $card->currency,
                 'amount' => $total,
                 'balance_after' => $agentAccount->balance,
-                'description' => $this->description ?: "Retrait carnet {$card->code} " . " Client: " . $card->member->code ." ". $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
+                'membership_card_id' => $card->id,
+                'description' => $this->description ?: "Retrait carnet {$card->code} " . " Client: " . $card->member->code . " " . $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name . " du collecteur " . $card->agent->name . " " . $card->agent->postnom,
 
             ]);
 
@@ -515,7 +519,7 @@ class MemberDetails extends Component
 
             DB::commit();
 
-            $this->reset(['type','amount', 'description']);
+            $this->reset(['type', 'amount', 'description']);
             $this->dispatch('closeModal', name: 'modalRetraitMembre');
             $this->dispatch('$refresh');
             notyf()->success('Retrait effectué avec succès !');
@@ -570,13 +574,13 @@ class MemberDetails extends Component
                 $searchTerm = "%{$this->search}%";
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('type', 'like', $searchTerm)
-                    ->orWhere('currency', 'like', $searchTerm);
+                        ->orWhere('currency', 'like', $searchTerm);
                 });
             })
             ->latest()
             ->paginate($this->perPage);
 
-        return view('livewire.members.member-details',[
+        return view('livewire.members.member-details', [
             'member' => $member,
             'transactions' => $transactions,
             'cards' => $this->cards
