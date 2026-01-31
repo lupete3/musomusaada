@@ -88,6 +88,11 @@ class User extends Authenticatable
         return $this->hasMany(MembershipCard::class);
     }
 
+    public function memberCards()
+    {
+        return $this->hasMany(MembershipCard::class, 'member_id');
+    }
+
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);

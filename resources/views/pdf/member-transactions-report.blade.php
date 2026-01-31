@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="utf-8">
     <title>Rapport des Transactions - {{ $member->name }}</title>
@@ -31,8 +32,18 @@
             margin-top: 8px;
         }
 
-        th, td { border: 1px solid #aaa; padding: 2px; font-size: 7px; text-align: left;}
-        th { background-color: #f1c206; }
+        th,
+        td {
+            border: 1px solid #aaa;
+            padding: 2px;
+            font-size: 7px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1c206;
+        }
+
         .totals {
             margin-top: 10px;
         }
@@ -66,12 +77,14 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="header">
         <h2>RAPPORT DES TRANSACTIONS</h2>
         <p><strong>{{ config('app.name') }}</strong></p>
-        <p><strong>Membre :</strong> {{ $member->name.' '.$member->postnom.' '.$member->prenom ?? '' }} (ID: {{ $member->code }})</p>
+        <p><strong>Membre :</strong> {{ $member->name . ' ' . $member->postnom . ' ' . $member->prenom ?? '' }} (ID:
+            {{ $member->code }})</p>
         <p><strong>Date d'impression :</strong> {{ now()->format('d/m/Y H:i') }}</p>
     </div>
 
@@ -112,40 +125,17 @@
                     <td>{{ $t->description ?? '-' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" style="text-align:center;">Aucune transaction trouvée.</td></tr>
+                <tr>
+                    <td colspan="6" style="text-align:center;">Aucune transaction trouvée.</td>
+                </tr>
             @endforelse
         </tbody>
     </table>
-
-    @php
-        $totalByCurrency = $transactions->groupBy('currency')->map(function ($group) {
-            return $group->sum('amount');
-        });
-    @endphp
-
-    <div class="totals">
-        <h4 style="text-align:center;">Totaux par devise</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Devise</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($totalByCurrency as $currency => $total)
-                    <tr>
-                        <td>{{ $currency }}</td>
-                        <td>{{ number_format($total, 2) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
 
     <div class="footer">
         Généré par {{ auth()->user()->name }} - {{ config('app.name') }}
     </div>
 
 </body>
+
 </html>

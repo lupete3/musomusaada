@@ -31,7 +31,9 @@ class MemberDetails extends Component
 
     public $card_id;
     public $cards = [];
+    public $activeCards = [];
     public $selectedCard;
+    public $confirming = false;
     public $contribution_date;
     public $amount = 0;
     public $a_retenir = 0;
@@ -45,8 +47,12 @@ class MemberDetails extends Component
 
         $this->memberId = $id;
 
-        $this->cards = MembershipCard::where('member_id', $this->memberId)
+        $this->activeCards = MembershipCard::where('member_id', $this->memberId)
             ->where('is_active', true)
+            ->with(['contributions'])
+            ->get();
+
+        $this->cards = MembershipCard::where('member_id', $this->memberId)
             ->with(['contributions'])
             ->get();
     }
@@ -115,7 +121,7 @@ class MemberDetails extends Component
             // Finalisation de la transaction
             DB::commit();
 
-            $this->reset(['amount', 'description']);
+            $this->reset(['amount', 'description', 'confirming']);
             $this->dispatch('closeModal', name: 'modalDepositMembre');
             $this->dispatch('$refresh');
             notyf()->success('Dépôt effectué avec succès !');
@@ -138,6 +144,48 @@ class MemberDetails extends Component
     public function updatedType()
     {
         $this->operation_type = $this->type;
+        $this->confirming = false;
+    }
+
+    public function showConfirm()
+    {
+        if ($this->operation_type === 'normal') {
+            $this->validate([
+                'amount' => 'required|numeric|min:0.01',
+                'currency' => 'required|in:USD,CDF',
+                'a_retenir' => 'nullable|numeric|min:0',
+            ]);
+        } else {
+            $this->validate([
+                'card_id' => 'required|exists:membership_cards,id',
+            ]);
+
+            // If it's a deposit card, we need amount
+            // If it's a withdrawal card, amount is calculated from card balance
+            // We can check if we are in deposit or withdrawal mode by looking at which modal is open or via a property
+            // But for now, let's just validate card_id.
+        }
+
+        $this->confirming = true;
+    }
+
+    public function cancelConfirmation()
+    {
+        $this->confirming = false;
+    }
+
+    public function openDepositModal()
+    {
+        $this->reset(['amount', 'description', 'card_id', 'confirming']);
+        $this->operation_type = 'carte'; // Default to card
+        $this->dispatch('openModal', name: 'modalDepositMembre');
+    }
+
+    public function openRetraitModal()
+    {
+        $this->reset(['amount', 'description', 'card_id', 'a_retenir', 'confirming']);
+        $this->operation_type = 'carte'; // Default to card
+        $this->dispatch('openModal', name: 'modalRetraitMembre');
     }
 
     public function contribute()
@@ -152,6 +200,11 @@ class MemberDetails extends Component
         DB::beginTransaction();
         try {
             $card = MembershipCard::findOrFail($this->card_id);
+
+            if (!$card->is_active) {
+                notyf()->error("Cette carte est clôturée. Opération impossible.");
+                return;
+            }
 
             // Montant d'une mise quotidienne
             $dailyAmount = $card->subscription_amount;
@@ -279,7 +332,7 @@ class MemberDetails extends Component
 
             DB::commit();
 
-            $this->reset(['contribution_date', 'amount']);
+            $this->reset(['contribution_date', 'amount', 'confirming']);
             $this->dispatch('closeModal', name: 'modalDepositMembre');
             $this->dispatch('$refresh');
             notyf()->success("Paiement de {$contributionsToPay->count()} mise(s) effectué(s) avec succès !");
@@ -396,7 +449,7 @@ class MemberDetails extends Component
 
             DB::commit();
 
-            $this->reset(['amount', 'description']);
+            $this->reset(['amount', 'description', 'confirming']);
             $this->dispatch('closeModal', name: 'modalRetraitMembre');
             $this->dispatch('$refresh');
             notyf()->success('Retrait effectué avec succès !');
@@ -546,17 +599,6 @@ class MemberDetails extends Component
         $this->dispatch('closeModal', name: 'modalRetraitMembre');
     }
 
-    public function openDepositModal()
-    {
-        $this->resetFilters();
-        $this->dispatch('openModal', name: 'modalDepositMembre');
-
-    }
-    public function openRetraitModal()
-    {
-        $this->resetFilters();
-        $this->dispatch('openModal', name: 'modalRetraitMembre');
-    }
 
     public function placeholder()
     {
@@ -583,7 +625,8 @@ class MemberDetails extends Component
         return view('livewire.members.member-details', [
             'member' => $member,
             'transactions' => $transactions,
-            'cards' => $this->cards
+            'cards' => $this->cards,
+            'activeCards' => $this->activeCards
         ]);
     }
 

@@ -116,6 +116,7 @@
     <table class="table">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Date</th>
                 <th>Type</th>
                 <th>Montant</th>
@@ -126,6 +127,7 @@
         <tbody>
             @foreach ($transactions as $t)
                 <tr>
+                    <td>{{ $loop->iteration }}</td>
                     <td>{{ \Carbon\Carbon::parse($t->created_at)->format('d/m/Y H:i') }}</td>
                     <td>{{ ucfirst($t->type) }}</td>
                     <td>{{ number_format($t->amount, 2) }}</td>
