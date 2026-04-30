@@ -152,36 +152,8 @@ class PurchaseMembershipCard extends Component
             }
 
             /**
-             * 📌 CREDIT CAISSE PRINCIPALE : le prix du carnet
+             * 📌 CREDIT COMPTE AGENT : le prix du carnet (Caisse secondaire)
              */
-            $cash = MainCashRegister::firstOrCreate(
-                ['currency' => $this->currency],
-                ['balance' => 0]
-            );
-            $cash->increment('balance', $this->price);
-
-            Transaction::create([
-                'account_id' => null,
-                'user_id' => Auth::id(),
-                'type' => 'vente_carte_adhesion',
-                'currency' => $this->currency,
-                'amount' => $this->price,
-                'balance_after' => $cash->balance,
-                'description' => "Vente de carte à {$member->name} - Montant: {$this->price} {$this->currency}",
-            ]);
-
-            /**
-             * 📌 COMMISSION AGENT : vente de carte
-             */
-            AgentCommission::create([
-                'agent_id' => Auth::id(),
-                'type' => 'carte',
-                'amount' => $this->price, // ou montant fixe = 500
-                'member_id' => $member->id,
-                'commission_date' => now(),
-            ]);
-
-            // Crédite aussi le compte agent pour traçabilité
             $agentAccount = AgentAccount::firstOrCreate(
                 ['user_id' => Auth::id(), 'currency' => $this->currency],
                 ['balance' => 0]
@@ -191,11 +163,21 @@ class PurchaseMembershipCard extends Component
             Transaction::create([
                 'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::id(),
-                'type' => 'commission_carte',
+                'type' => 'vente_carte_adhesion',
                 'currency' => $this->currency,
                 'amount' => $this->price,
                 'balance_after' => $agentAccount->balance,
-                'description' => "Commission vente carte pour {$member->name}",
+                'description' => "Vente de carte à {$member->name} - Montant: {$this->price} {$this->currency}",
+            ]);
+
+            // La commission est déjà incluse dans le montant encaissé par l'agent ou gérée séparément ?
+            // L'utilisateur demande de séparer la caisse. On garde la trace de la commission si nécessaire.
+            AgentCommission::create([
+                'agent_id' => Auth::id(),
+                'type' => 'carte',
+                'amount' => $this->price, 
+                'member_id' => $member->id,
+                'commission_date' => now(),
             ]);
 
             UserLogHelper::log_user_activity(

@@ -49,6 +49,8 @@ Route::middleware(['auth', 'auth.session', 'permission:afficher-caisse-centrale'
     Route::get('/caisse-centrale', [ManageCashRegisterController::class, 'index'])->name('cash.register');
     Route::get('/caisse-centrale/export-transactions', [ManageCashRegisterController::class, 'generate'])
         ->name('cash.register.export.pdf');
+    Route::get('/caisse-centrale/validation-virements', [App\Http\Controllers\Admin\TransferValidationController::class, 'index'])
+        ->name('cash.register.validation');
 });
 
 

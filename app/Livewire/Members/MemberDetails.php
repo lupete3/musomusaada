@@ -78,9 +78,9 @@ class MemberDetails extends Component
                 ['balance' => 0]
             );
 
-            // Récupération de la caisse de l'agent
-            $agentAccount = MainCashRegister::firstOrCreate(
-                ['currency' => $this->currency],
+            // Récupération de la caisse de l'agent (Caisse secondaire)
+            $agentAccount = AgentAccount::firstOrCreate(
+                ['user_id' => Auth::id(), 'currency' => $this->currency],
                 ['balance' => 0]
             );
 
@@ -91,9 +91,10 @@ class MemberDetails extends Component
             $account->save();
             $agentAccount->save();
 
-            // Création de la transaction
+            // Création de la transaction pour l'agent
             $transaction = Transaction::create([
                 'account_id' => null,
+                'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::id(),
                 'type' => 'dépôt',
                 'currency' => $this->currency,
@@ -249,8 +250,8 @@ class MemberDetails extends Component
                 ['balance' => 0]
             );
 
-            $agentAccount = MainCashRegister::firstOrCreate(
-                ['currency' => $card->currency],
+            $agentAccount = AgentAccount::firstOrCreate(
+                ['user_id' => Auth::id(), 'currency' => $card->currency],
                 ['balance' => 0]
             );
 
@@ -261,6 +262,7 @@ class MemberDetails extends Component
 
             Transaction::create([
                 'account_id' => null,
+                'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::id(),
                 'type' => 'mise_quotidienne',
                 'currency' => $card->currency,
@@ -372,9 +374,9 @@ class MemberDetails extends Component
                 return;
             }
 
-            // Récupération de la caisse de l'agent
-            $agentAccount = MainCashRegister::firstOrCreate(
-                ['currency' => $this->currency],
+            // Récupération de la caisse de l'agent (Caisse secondaire)
+            $agentAccount = AgentAccount::firstOrCreate(
+                ['user_id' => Auth::id(), 'currency' => $this->currency],
                 ['balance' => 0]
             );
 
@@ -386,7 +388,7 @@ class MemberDetails extends Component
 
             if ($agentAccount->balance < $this->amount) {
                 DB::rollBack();
-                notyf()->error('Le solde de la caisse est insuffisant.');
+                notyf()->error('Le solde de votre caisse est insuffisant.');
                 return;
             }
 
@@ -403,9 +405,10 @@ class MemberDetails extends Component
             $account->save();
             $agentAccount->save();
 
-            // Création de la transaction
+            // Création de la transaction pour l'agent
             $transaction = Transaction::create([
                 'account_id' => null,
+                'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::id(),
                 'type' => 'retrait',
                 'currency' => $this->currency,
@@ -497,39 +500,29 @@ class MemberDetails extends Component
                 return;
             }
 
-            // Récupération de la caisse de l'agent
-            $agentAccount = MainCashRegister::firstOrCreate(
-                ['currency' => $card->currency],
+            // Récupération de la caisse de l'agent (Caisse secondaire)
+            $agentAccount = AgentAccount::firstOrCreate(
+                ['user_id' => Auth::id(), 'currency' => $card->currency],
                 ['balance' => 0]
             );
 
-            // Récupération de la caisse pour les retenus de mise
-            // $retenuMiseAccount = AgentAccount::firstOrCreate(
-            //     ['user_id' => 10, 'currency' => $card->currency],
-            //     ['balance' => 0]
-            // );
-
             if ($agentAccount->balance < $total) {
                 DB::rollBack();
-                notyf()->error('Le solde de la caisse est insuffisant.');
+                notyf()->error('Le solde de votre caisse est insuffisant.');
                 return;
             }
 
             $account->balance -= $total;
             $agentAccount->balance -= ($total);
-            // $agentAccount->balance -= ($total - $aretenir);
-            // $retenuMiseAccount->balance += $aretenir;
 
             $account->save();
             $agentAccount->save();
-            // Credite du compte retenu mise
-            // $retenuMiseAccount->save();
 
             // Marquer comme retiré
             $card->is_active = 0;
             $card->save();
 
-            // Enregistrer la transaction
+            // Enregistrer la transaction membre
             $transaction = Transaction::create([
                 'account_id' => $account->id,
                 'user_id' => $card->member_id,
@@ -541,9 +534,10 @@ class MemberDetails extends Component
                 'description' => $this->description ?: "Retrait carnet {$card->code} " . $card->member->code . " " . $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name,
             ]);
 
-            // Enregistrer la transaction
+            // Enregistrer la transaction agent
             Transaction::create([
                 'account_id' => NULL,
+                'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::user()->id,
                 'type' => 'retrait_carte_adhesion',
                 'currency' => $card->currency,
@@ -551,7 +545,6 @@ class MemberDetails extends Component
                 'balance_after' => $agentAccount->balance,
                 'membership_card_id' => $card->id,
                 'description' => $this->description ?: "Retrait carnet {$card->code} " . " Client: " . $card->member->code . " " . $card->member->name . " " . $card->member->postnom . " par " . Auth::user()->name . " du collecteur " . $card->agent->name . " " . $card->agent->postnom,
-
             ]);
 
             // Transaction::create([

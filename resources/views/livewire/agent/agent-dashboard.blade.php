@@ -54,10 +54,25 @@
                     </div>
 
                     <div class="card-body">
+                        <h6 class="mb-2 text-primary">Solde Actuel (Caisse Secondaire)</h6>
+                        @if (!empty($actualBalances[$agent->id]))
+                            <ul class="list-unstyled mb-3">
+                                @foreach ($actualBalances[$agent->id] as $currency => $balance)
+                                    <li class="d-flex justify-content-between mb-1">
+                                        <span class="fw-bold">{{ $currency }}</span>
+                                        <strong class="text-success fs-5">{{ number_format($balance, 2) }}</strong>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-muted mb-3">Caisse vide.</p>
+                        @endif
+
+                        <h6 class="mb-2 border-top pt-3">Mouvements de la période</h6>
                         @if (!empty($balances[$agent->id]))
                             <ul class="list-unstyled mb-0">
                                 @foreach ($balances[$agent->id] as $currency => $balance)
-                                    <li class="d-flex justify-content-between mb-2">
+                                    <li class="d-flex justify-content-between mb-1">
                                         <span>{{ $currency }}</span>
                                         <strong>{{ number_format($balance, 2) }}</strong>
                                     </li>

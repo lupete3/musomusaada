@@ -25,6 +25,12 @@ class TransferToCentralCash extends Component
         'amount' => 'required|numeric|min:0.01',
     ];
 
+    public function fillForm($currency, $amount)
+    {
+        $this->currency = $currency;
+        $this->amount = $amount;
+    }
+
     public function mount()
     {
         Gate::authorize('ajouter-transfert-caisse', User::class);
@@ -51,42 +57,35 @@ class TransferToCentralCash extends Component
             ['balance' => 0]
         );
 
-        // Mise à jour des soldes
-        $agentAccount->balance -= $this->amount;
-        $mainCash->balance += $this->amount;
-
-        $agentAccount->save();
-        $mainCash->save();
-
-        // Enregistrer le virement
+        // Enregistrer la demande de virement (status pending par défaut)
         $transfer = Transfert::create([
             'from_agent_account_id' => $agentAccount->id,
             'to_main_cash_register_id' => $mainCash->id,
             'currency' => $this->currency,
             'amount' => $this->amount,
+            'status' => 'pending',
         ]);
 
-        // Enregistrer la transaction pour l'agent
+        // On peut enregistrer une transaction de type 'demande_virement' pour le suivi
         Transaction::create([
             'agent_account_id' => $agentAccount->id,
             'user_id' => Auth::id(),
-            'type' => 'virement vers caisse centrale',
+            'type' => 'demande virement',
             'currency' => $this->currency,
             'amount' => $this->amount,
-            'balance_after' => $agentAccount->balance,
-            'description' => "Virement de ".$this->amount." ".$this->currency." du compte de ".Auth::user()->name." vers la caisse centrale. #REF".$transfer->id,
+            'balance_after' => $agentAccount->balance, // Le solde ne change pas encore
+            'description' => "Demande de virement de ".$this->amount." ".$this->currency." vers la caisse centrale. En attente de validation. #REF".$transfer->id,
         ]);
 
         UserLogHelper::log_user_activity(
-            action: 'virement_caisse_centrale',
-            description: "Virement de {$this->amount} {$this->currency} du compte de ".Auth::user()->name." vers la caisse centrale. #REF{$transfer->id}"
+            action: 'demande_virement_caisse',
+            description: "Demande de virement de {$this->amount} {$this->currency} vers la caisse centrale. #REF{$transfer->id}"
         );
 
-        notyf()->success( 'Virement effectué avec succès !');
+        notyf()->success('Demande de virement envoyée avec succès ! En attente de validation.');
 
         $this->reset(['amount']);
-        $this->redirect(route('transfer.receipt.generate', ['id' => $transfer->id]), navigate: false);
-
+        // $this->redirect(route('transfer.receipt.generate', ['id' => $transfer->id]), navigate: false);
     }
 
     public function placeholder()
@@ -94,10 +93,13 @@ class TransferToCentralCash extends Component
         return view('livewire.placeholder');
     }
 
-
     public function render()
     {
         $agentAccounts = AgentAccount::where('user_id', Auth::id())->get();
-        return view('livewire.transfer-to-central-cash', compact('agentAccounts'));
+        $myTransfers = Transfert::with('validator')->whereHas('fromAgentAccount', function($q) {
+            $q->where('user_id', Auth::id());
+        })->latest()->take(10)->get();
+
+        return view('livewire.transfer-to-central-cash', compact('agentAccounts', 'myTransfers'));
     }
 }

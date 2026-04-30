@@ -15,7 +15,7 @@ class TransferToCentralCashController extends Controller
 
     public function generate($id)
     {
-        $transfer = Transfert::with(['fromAgentAccount.user'])->findOrFail($id);
+        $transfer = Transfert::with(['fromAgentAccount.user', 'validator'])->findOrFail($id);
         $agent = $transfer->fromAgentAccount->user;
 
         $data = compact('transfer', 'agent');

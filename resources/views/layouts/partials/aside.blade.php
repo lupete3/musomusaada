@@ -26,11 +26,23 @@
 
         <!-- Liens Comptable -->
         @can('afficher-caisse-centrale')
-            <li class="menu-item @if (request()->routeIs('cash.register')) active @endif">
-                <a href="{{ route('cash.register') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-wallet"></i> <!-- Caisse centrale -->
+            <li class="menu-item @if (request()->routeIs('cash.register', 'cash.register.validation')) active open @endif">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-wallet"></i>
                     <div data-i18n="Analytics">Caisse Centrale</div>
                 </a>
+                <ul class="menu-sub">
+                    <li class="menu-item @if (request()->routeIs('cash.register')) active @endif">
+                        <a href="{{ route('cash.register') }}" class="menu-link">
+                            <div data-i18n="Analytics">Situation Caisse</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @if (request()->routeIs('cash.register.validation')) active @endif">
+                        <a href="{{ route('cash.register.validation') }}" class="menu-link">
+                            <div data-i18n="Analytics">Validation Virements</div>
+                        </a>
+                    </li>
+                </ul>
             </li>
         @endcan
 
@@ -91,15 +103,6 @@
             </li>
         @endcan
 
-        @can('ajouter-transfert-caisse', App\Models\User::class)
-            {{-- <li class="menu-item @if (request()->routeIs('transfer.to.central')) active @endif">
-                <a href="{{ route('transfer.to.central') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-transfer"></i> <!-- Virement -->
-                    <div data-i18n="Analytics">Virement Caisse Centrale</div>
-                </a>
-            </li> --}}
-        @endcan
-
         @can('afficher-client', App\Models\User::class)
             <li
                 class="menu-item @if (request()->routeIs('member.register', 'member.details', 'receipt.generate')) active @endif">
@@ -116,6 +119,15 @@
                 <a href="{{ route('members.sell-card') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-id-card"></i> <!-- Icône de carte membre -->
                     <div data-i18n="Analytics">Vente Cartes Membres</div>
+                </a>
+            </li>
+        @endcan
+
+        @can('afficher-transfert-caisse')
+            <li class="menu-item @if (request()->routeIs('transfer.to.central')) active @endif">
+                <a href="{{ route('transfer.to.central') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-transfer"></i> <!-- Virement -->
+                    <div data-i18n="Analytics">Virement Caisse Centrale</div>
                 </a>
             </li>
         @endcan

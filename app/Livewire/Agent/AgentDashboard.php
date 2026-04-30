@@ -116,7 +116,18 @@ class AgentDashboard extends Component
             'retrait_carte_adhesion'
         ];
 
+        $actualBalances = [];
+        
         foreach ($users as $user) {
+            // Actual balances from AgentAccount table
+            $userAccounts = \App\Models\AgentAccount::where('user_id', $user->id)->get();
+            $agentBalances = [];
+            foreach ($userAccounts as $acc) {
+                $agentBalances[$acc->currency] = $acc->balance;
+            }
+            $actualBalances[$user->id] = $agentBalances;
+
+            // Filtered periodic transaction totals
             $query = Transaction::where('user_id', $user->id);
             $query = $this->applyDateFilter($query);
 
@@ -143,6 +154,7 @@ class AgentDashboard extends Component
         return view('livewire.agent.agent-dashboard', [
             'users' => $users,
             'balances' => $balances,
+            'actualBalances' => $actualBalances,
         ]);
     }
 }

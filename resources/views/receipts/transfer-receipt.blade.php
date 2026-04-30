@@ -83,7 +83,7 @@
         </tr>
         <tr>
             <td class="bold">Agent</td>
-            <td>{{ $agent->name }}</td>
+            <td>{{ $agent->name . ' ' . $agent->postnom }}</td>
         </tr>
         <tr>
             <td class="bold">Réf.</td>
@@ -93,6 +93,12 @@
             <td class="bold">Date</td>
             <td>{{ $transfer->created_at->format('d/m/Y H:i') }}</td>
         </tr>
+        @if($transfer->validator)
+        <tr>
+            <td class="bold">Validé par</td>
+            <td>{{ $transfer->validator->name . ' ' . $transfer->validator->postnom }}</td>
+        </tr>
+        @endif
     </table>
 
     <hr class="line">
