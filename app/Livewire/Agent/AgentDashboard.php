@@ -134,18 +134,12 @@ class AgentDashboard extends Component
             $totals = $query
                 ->select(
                     'currency',
-                    DB::raw("
-                        SUM(
-                            CASE
-                                WHEN type IN ('" . implode("','", $typesPositifs) . "') THEN amount
-                                WHEN type IN ('" . implode("','", $typesNegatifs) . "') THEN -amount
-                                ELSE 0
-                            END
-                        ) as balance
-                    ")
+                    DB::raw("SUM(CASE WHEN type IN ('" . implode("','", $typesPositifs) . "') THEN amount ELSE 0 END) as entrees"),
+                    DB::raw("SUM(CASE WHEN type IN ('" . implode("','", $typesNegatifs) . "') THEN amount ELSE 0 END) as sorties")
                 )
                 ->groupBy('currency')
-                ->pluck('balance', 'currency')
+                ->get()
+                ->keyBy('currency')
                 ->toArray();
 
             $balances[$user->id] = $totals;

@@ -71,10 +71,21 @@
                         <h6 class="mb-2 border-top pt-3">Mouvements de la période</h6>
                         @if (!empty($balances[$agent->id]))
                             <ul class="list-unstyled mb-0">
-                                @foreach ($balances[$agent->id] as $currency => $balance)
-                                    <li class="d-flex justify-content-between mb-1">
-                                        <span>{{ $currency }}</span>
-                                        <strong>{{ number_format($balance, 2) }}</strong>
+                                @foreach ($balances[$agent->id] as $currency => $data)
+                                    <li class="mb-3">
+                                        <strong class="d-block border-bottom pb-1 mb-1 text-primary">{{ $currency }}</strong>
+                                        <div class="d-flex justify-content-between text-success">
+                                            <span>Entrées :</span>
+                                            <span>+ {{ number_format($data['entrees'], 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between text-danger">
+                                            <span>Sorties :</span>
+                                            <span>- {{ number_format($data['sorties'], 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between fw-bold pt-1 mt-1 border-top">
+                                            <span>Net :</span>
+                                            <span>{{ number_format($data['entrees'] - $data['sorties'], 2) }}</span>
+                                        </div>
                                     </li>
                                 @endforeach
                             </ul>

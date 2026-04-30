@@ -143,8 +143,6 @@
             </li> --}}
         @endcan
 
-
-
         @can('afficher-rapport-credit')
             <li class="menu-item @if (request()->routeIs('repayments.simulation')) active @endif">
                 <a href="{{ route('agents.commissions') }}" class="menu-link">
