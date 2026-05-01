@@ -57,12 +57,12 @@
         @endcan
 
         @can('effectuer-virement')
-            {{-- <li class="menu-item @if (request()->routeIs('transfert.ajouter')) active @endif">
+            <li class="menu-item @if (request()->routeIs('transfert.ajouter')) active @endif">
                 <a href="{{ route('transfert.ajouter') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-transfer"></i> <!-- Icône spécifique pour transfert -->
                     <div data-i18n="Analytics">Transfert Compte</div>
                 </a>
-            </li> --}}
+            </li>
         @endcan
 
         @can('afficher-caisse-agent')
