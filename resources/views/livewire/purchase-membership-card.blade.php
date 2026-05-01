@@ -116,9 +116,11 @@
                                         </button>
                                         @if ($card->is_active)
                                         @can('modifier-carnet', App\Models\User::class)
+                                            @if($card->total_saved == 0)
                                             <button wire:click="editCard({{ $card->id }})" class="btn btn-primary btn-sm" title="Modifier cette carte">
                                                 Modifier
                                             </button>
+                                            @endif
                                         @endcan
                                         @endif
                                     </td>

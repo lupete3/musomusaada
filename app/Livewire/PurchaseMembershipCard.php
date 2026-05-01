@@ -261,6 +261,11 @@ class PurchaseMembershipCard extends Component
             return;
         }
 
+        if ($card->contributions()->where('is_paid', true)->exists()) {
+            notyf()->error('Modification impossible : une mise a déjà été effectuée sur ce carnet.');
+            return;
+        }
+
         $this->editCardId = $card->id;
         $this->edit_code = $card->code;
         $this->edit_currency = $card->currency;
@@ -293,6 +298,11 @@ class PurchaseMembershipCard extends Component
             'currency' => $this->edit_currency,
             'subscription_amount' => $this->edit_subscription_amount,
             'user_id' => $this->edit_agent_id,
+        ]);
+
+        // Mettre à jour le montant de toutes les contributions (puisqu'aucune n'a encore été payée)
+        $card->contributions()->update([
+            'amount' => $this->edit_subscription_amount
         ]);
 
         UserLogHelper::log_user_activity(
