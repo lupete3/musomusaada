@@ -92,12 +92,25 @@
                     @endif
 
                     <div class="col-md-6 mb-1">
-                        <label for="password" class="form-label">Rôles</label>
+                        <label for="role" class="form-label">Rôle Principal</label>
+                        <select wire:model.defer="role" id="role" class="form-select">
+                            <option value="admin">Admin</option>
+                            <option value="caissier">Caissier</option>
+                            <option value="recouvreur">Recouvreur</option>
+                            <option value="comptable">Comptable</option>
+                            <option value="receptionniste">Réceptionniste</option>
+                            <option value="membre">Membre</option>
+                        </select>
+                        @error('role') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-1">
+                        <label for="roles" class="form-label">Groupes de permissions (Spatie)</label>
 
                         <div class="form-check">
-                            @foreach ($roles_user as $role)
-                                <input class="form-check-input" type="checkbox" wire:model.defer="roles" value="{{ $role->name }}" id="role_{{ $role->id }}">
-                                <label class="form-check-label" for="role_{{ $role->id }}">{{ $role->name }}</label><br>
+                            @foreach ($roles_user as $role_item)
+                                <input class="form-check-input" type="checkbox" wire:model.defer="roles" value="{{ $role_item->name }}" id="role_{{ $role_item->id }}">
+                                <label class="form-check-label" for="role_{{ $role_item->id }}">{{ $role_item->name }}</label><br>
                             @endforeach
                         </div>
                         @error('roles') <span class="text-danger">{{ $message }}</span> @enderror

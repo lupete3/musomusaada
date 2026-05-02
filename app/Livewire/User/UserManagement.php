@@ -49,7 +49,8 @@ class UserManagement extends Component
                 'adresse_physique' => ['nullable', 'string'],
                 'profession' => ['nullable', 'string'],
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-                'role' => ['nullable', 'in:admin,caissier,recouvreur,membre'],
+                'role' => ['nullable', 'in:admin,caissier,recouvreur,comptable,receptionniste,membre'],
+                'roles' => ['nullable', 'array'],
                 'status' => ['required','in:0,1'],
             ],[
                 'name.required' => 'Le nom est obligatoire.',
@@ -125,6 +126,7 @@ class UserManagement extends Component
             $this->profession = $user->profession;
             $this->email = $user->email;
             $this->status = $user->status;
+            $this->role = $user->role;
             $this->password = null;
             $this->editModal = true;
 
@@ -157,7 +159,8 @@ class UserManagement extends Component
                     'required', 'string', 'lowercase', 'email', 'max:255',
                     Rule::unique('users')->ignore($this->userId),
                 ],
-                'role' => ['nullable', 'in:admin,caissier,recouvreur,membre'],
+                'role' => ['nullable', 'in:admin,caissier,recouvreur,comptable,receptionniste,membre'],
+                'roles' => ['nullable', 'array'],
             ];
 
             // Si mot de passe est fourni on l'ajoute aux règles
