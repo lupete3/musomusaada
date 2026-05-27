@@ -134,10 +134,21 @@
                         Période : <strong>{{ $period === 'custom' ? "$dateStart à $dateEnd" : $period }}</strong> |
                         Devise : <strong>{{ $currency }}</strong>
                     </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Statut des carnets</label>
+                            <select class="form-select" wire:model.live="detailsStatusFilter">
+                                <option value="all">Tous les carnets</option>
+                                <option value="active">Carnets actifs</option>
+                                <option value="inactive">Carnets inactifs</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive text-nowrap">
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
+                                    <th>#</th>
                                     <th>Code Carnet</th>
                                     <th>Membre</th>
                                     <th>Statut</th>
@@ -147,8 +158,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($detailsData as $detail)
+                                @forelse($detailsData as $detail)
                                     <tr>
+                                        <td class="text-center">{{ $loop->iteration }}</td>
                                         <td class="fw-bold">{{ $detail['card_code'] }}</td>
                                         <td>{{ $detail['member_name'] }}</td>
                                         <td>
@@ -168,11 +180,18 @@
                                             {{ number_format($detail['current_balance'], 2) }}
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="bx bx-info-circle fs-4 mb-2"></i><br>
+                                            Aucun carnet trouve pour ce filtre.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                             <tfoot class="table-light">
                                 <tr class="fw-bold">
-                                    <td colspan="3">TOTAUX</td>
+                                    <td colspan="4">TOTAUX</td>
                                     <td class="text-end text-success">
                                         {{ number_format(collect($detailsData)->sum('total_deposits'), 2) }}
                                     </td>

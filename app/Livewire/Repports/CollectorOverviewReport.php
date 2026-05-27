@@ -24,6 +24,7 @@ class CollectorOverviewReport extends Component
     public $selectedCollectorIdForDetails = null;
     public $detailsData = [];
     public $selectedCollectorName = '';
+    public $detailsStatusFilter = 'all';
 
     public function mount()
     {
@@ -35,6 +36,17 @@ class CollectorOverviewReport extends Component
     {
         if (in_array($field, ['collectorId', 'currency', 'period', 'dateStart', 'dateEnd'])) {
             $this->resetPage();
+
+            if ($this->selectedCollectorIdForDetails) {
+                $this->detailsData = $this->getCollectorDetails($this->selectedCollectorIdForDetails);
+            }
+        }
+    }
+
+    public function updatedDetailsStatusFilter()
+    {
+        if ($this->selectedCollectorIdForDetails) {
+            $this->detailsData = $this->getCollectorDetails($this->selectedCollectorIdForDetails);
         }
     }
 
@@ -121,10 +133,18 @@ class CollectorOverviewReport extends Component
 
     public function getCollectorDetails($collectorId)
     {
-        $cards = MembershipCard::where('user_id', $collectorId)
-            ->where('currency', $this->currency)
-            ->with(['member', 'contributions'])
-            ->get();
+        $cardsQuery = MembershipCard::where('user_id', $collectorId)
+            ->where('currency', $this->currency);
+
+        if ($this->detailsStatusFilter === 'active') {
+            $cardsQuery->where('is_active', true);
+        }
+
+        if ($this->detailsStatusFilter === 'inactive') {
+            $cardsQuery->where('is_active', false);
+        }
+
+        $cards = $cardsQuery->with(['member', 'contributions'])->get();
 
         $data = [];
 
@@ -169,6 +189,7 @@ class CollectorOverviewReport extends Component
     {
         $this->selectedCollectorIdForDetails = null;
         $this->detailsData = [];
+        $this->detailsStatusFilter = 'all';
         $this->dispatch('closeModal', name: 'modalCollectorDetails');
     }
 
@@ -205,6 +226,7 @@ class CollectorOverviewReport extends Component
             'period' => $this->period,
             'dateStart' => $this->dateStart,
             'dateEnd' => $this->dateEnd,
+            'detailsStatusFilter' => $this->detailsStatusFilter,
         ])->setPaper('A4', 'portrait');
 
         return response()->streamDownload(function () use ($pdf) {

@@ -95,11 +95,21 @@
         @endif
         <br>
         <strong>Devise :</strong> {{ $currency }}
+        <br>
+        <strong>Statut des carnets :</strong>
+        @if (($detailsStatusFilter ?? 'all') === 'active')
+            Carnets actifs
+        @elseif (($detailsStatusFilter ?? 'all') === 'inactive')
+            Carnets inactifs
+        @else
+            Tous les carnets
+        @endif
     </div>
 
     <table class="table">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Code Carnet</th>
                 <th>Membre</th>
                 <th>Statut</th>
@@ -109,8 +119,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($detailsData as $detail)
+            @forelse($detailsData as $detail)
                 <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
                     <td class="fw-bold">{{ $detail['card_code'] }}</td>
                     <td>{{ $detail['member_name'] }}</td>
                     <td>{{ $detail['is_active'] ? 'Actif' : 'Clôturé' }}</td>
@@ -118,11 +129,15 @@
                     <td class="text-end">{{ number_format($detail['total_withdrawals'], 2) }}</td>
                     <td class="text-end fw-bold">{{ number_format($detail['current_balance'], 2) }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center">Aucun carnet trouve pour ce filtre.</td>
+                </tr>
+            @endforelse
         </tbody>
         <tfoot style="background-color: #f8f9fa;">
             <tr class="fw-bold">
-                <td colspan="3">TOTAUX</td>
+                <td colspan="4">TOTAUX</td>
                 <td class="text-end">{{ number_format(collect($detailsData)->sum('total_deposits'), 2) }}</td>
                 <td class="text-end">{{ number_format(collect($detailsData)->sum('total_withdrawals'), 2) }}</td>
                 <td class="text-end">{{ number_format(collect($detailsData)->sum('current_balance'), 2) }}</td>
