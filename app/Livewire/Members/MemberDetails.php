@@ -39,7 +39,7 @@ class MemberDetails extends Component
     public $a_retenir = 0;
     public $operation_type = 'carte';
 
-    public $type;
+    public $type = 'carte';
 
     public function mount($id)
     {
