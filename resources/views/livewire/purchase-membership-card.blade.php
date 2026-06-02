@@ -97,7 +97,7 @@
                                     <td>{{ optional($card->member)->code ?? 'N/A' }} {{ optional($card->member)->name ?? 'N/A' }}
                                         {{ optional($card->member)->postnom ?? 'N/A' }} {{ optional($card->member)->prenom ?? 'N/A' }}
                                     </td>
-                                    <td>{{ number_format($card->price, 2) }} {{ $card->currency }}</td>
+                                    <td>{{ number_format($card->price, 2) }} CDF </td>
                                     <td>{{ number_format($card->subscription_amount, 2) }} {{ $card->currency }}</td>
                                     <td>{{ number_format($card->total_saved, 2) }} {{ $card->currency }}</td>
                                     <td>{{ number_format($card->total_remaining, 2) }} {{ $card->currency }}</td>

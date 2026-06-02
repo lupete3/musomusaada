@@ -154,8 +154,11 @@ class PurchaseMembershipCard extends Component
             /**
              * 📌 CREDIT COMPTE AGENT : le prix du carnet (Caisse secondaire)
              */
+            $cardPriceCurrency = 'CDF';
+            $cardPrice = '500';
+
             $agentAccount = AgentAccount::firstOrCreate(
-                ['user_id' => Auth::id(), 'currency' => $this->currency],
+                ['user_id' => Auth::id(), 'currency' => $cardPriceCurrency],
                 ['balance' => 0]
             );
             $agentAccount->increment('balance', $this->price);
@@ -164,10 +167,10 @@ class PurchaseMembershipCard extends Component
                 'agent_account_id' => $agentAccount->id,
                 'user_id' => Auth::id(),
                 'type' => 'vente_carte_adhesion',
-                'currency' => $this->currency,
-                'amount' => $this->price,
+                'currency' => $cardPriceCurrency,
+                'amount' => $cardPrice,
                 'balance_after' => $agentAccount->balance,
-                'description' => "Vente de carte à {$member->name} - Montant: {$this->price} {$this->currency}",
+                'description' => "Vente de carte à {$member->name} - Montant: {$cardPrice} {$cardPriceCurrency}",
             ]);
 
             // La commission est déjà incluse dans le montant encaissé par l'agent ou gérée séparément ?
@@ -175,14 +178,14 @@ class PurchaseMembershipCard extends Component
             AgentCommission::create([
                 'agent_id' => Auth::id(),
                 'type' => 'carte',
-                'amount' => $this->price, 
+                'amount' => $cardPrice,
                 'member_id' => $member->id,
                 'commission_date' => now(),
             ]);
 
             UserLogHelper::log_user_activity(
                 action: 'achat_carte_adhesion',
-                description: "Achat de la carte #{$card->code} pour {$member->name} {$member->postnom} ({$member->code}), montant {$this->price} {$this->currency}"
+                description: "Achat de la carte #{$card->code} pour {$member->name} {$member->postnom} ({$member->code}), montant {$cardPrice} {$cardPriceCurrency}"
             );
 
             DB::commit();
