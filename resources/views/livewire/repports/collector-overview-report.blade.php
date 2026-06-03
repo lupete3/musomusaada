@@ -64,9 +64,9 @@
                                 @forelse($reportData as $row)
                                     <tr>
                                         <td>
-                                            <span class="fw-bold">{{ $row['collector']->name }}
-                                                {{ $row['collector']->postnom }}</span><br>
-                                            <small class="text-muted">{{ $row['collector']->code }}</small>
+                                            <span class="fw-bold">{{ $row['collector']->name ?? 'Membre supprimé' }}
+                                                {{ $row['collector']->postnom ?? 'Membre supprimé' }}</span><br>
+                                            <small class="text-muted">{{ $row['collector']->code ?? 'Code non disponible' }}</small>
                                         </td>
                                         <td class="text-end text-success fw-semibold">
                                             {{ number_format($row['total_deposits'], 2) }} {{ $currency }}

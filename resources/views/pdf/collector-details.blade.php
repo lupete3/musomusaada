@@ -123,7 +123,7 @@
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td class="fw-bold">{{ $detail['card_code'] }}</td>
-                    <td>{{ $detail['member_name'] }}</td>
+                    <td>{{ $detail['member_name'] ?? 'Membre supprimé' }}</td>
                     <td>{{ $detail['is_active'] ? 'Actif' : 'Clôturé' }}</td>
                     <td class="text-end">{{ number_format($detail['total_deposits'], 2) }}</td>
                     <td class="text-end">{{ number_format($detail['total_withdrawals'], 2) }}</td>

@@ -174,7 +174,7 @@ class CollectorOverviewReport extends Component
 
             $data[] = [
                 'card_code' => $card->code,
-                'member_name' => $card->member->name . ' ' . $card->member->postnom,
+                'member_name' => $card->member->name ?? 'Membre supprimé' . ' ' . $card->member?->postnom ?? 'Membre supprimé',
                 'total_deposits' => $totalDeposits,
                 'total_withdrawals' => $totalWithdrawals,
                 'current_balance' => $currentBalance,
