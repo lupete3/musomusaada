@@ -99,7 +99,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $carnet->member->code ?? '' }}</td>
-                    <td>{{ $carnet->member->name ?? '' }} {{ $carnet->member->postnom ?? '' }} {{ $carnet->member->prenom ?? '' }}</td>
+                    <td>{{ $carnet->member->name ?? 'Membre supprimé' }} {{ $carnet->member->postnom ?? 'Membre supprimé' }} {{ $carnet->member->prenom ?? '' }}</td>
                     <td>{{ $carnet->member->telephone ?? '' }}</td>
                     <td>{{ strtoupper($carnet->currency) }}</td>
                     <td>{{ \Carbon\Carbon::parse($carnet->created_at)->format('d/m/Y') }}</td>

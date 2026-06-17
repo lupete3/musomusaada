@@ -151,7 +151,7 @@
                                 $pourcentage = round(($carnet->contributed_days_count / 31) * 100, 1);
                             @endphp
                             <tr>
-                                <td>{{ $carnet->member->name . ' ' . $carnet->member->postnom . ' ' . $carnet->member->prenom ?? 'N/A' }}
+                                <td>{{ $carnet->member->name ?? 'Membre supprimé' . ' ' . $carnet->member->postnom ?? 'Membre supprimé' . ' ' . $carnet->member->prenom ?? 'N/A' }}
                                 </td>
                                 <td>{{ number_format($carnet->subscription_amount, 2) }} {{ $carnet->currency }}</td>
                                 <td>{{ number_format($carnet->getTotalSavedAttribute(), 2) }} {{ $carnet->currency }}</td>
