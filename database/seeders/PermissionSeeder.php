@@ -68,6 +68,7 @@ class PermissionSeeder extends Seeder
             "afficher-rapport-carnet",
 
             "effectuer-virement",
+            "desactiver-agent",
         ];
 
         foreach ($permissions as $key => $permission) {

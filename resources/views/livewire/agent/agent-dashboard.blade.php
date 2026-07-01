@@ -29,42 +29,44 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="m-0">Agent : {{ $agent->name }} {{ $agent->postnom }}
                         </h6>
-                        <div class="form-check form-switch">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="status-{{ $agent->id }}"
-                                {{ $agent->status ? 'checked' : '' }}
-                                wire:click="toggleStatus({{ $agent->id }})">
+                        @can('desactiver-agent')
+                            <div class="form-check form-switch">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="status-{{ $agent->id }}"
+                                    {{ $agent->status ? 'checked' : '' }}
+                                    wire:click="toggleStatus({{ $agent->id }})">
 
-                            <label class="form-check-label"
-                                for="status-{{ $agent->id }}">
-                                {{ $agent->status ? 'Actif' : 'Inactif' }}
-                            </label>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn p-0" type="button" id="dropdown-{{ $agent->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-{{ $agent->id }}">
-                                <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "day")'>Aujourd'hui</a>
-                                <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "week")'>Cette semaine</a>
-                                <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "month")'>Ce mois</a>
-                                <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "year")'>Cette année</a>
-                                <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "custom")'>Intervalle</a>
+                                <label class="form-check-label"
+                                    for="status-{{ $agent->id }}">
+                                    {{ $agent->status ? 'Actif' : 'Inactif' }}
+                                </label>
                             </div>
-                            @if ($filter === 'custom')
-                                <div class="">
-                                    <input type="date" class="form-control" wire:model="startDate">
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="dropdown-{{ $agent->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-{{ $agent->id }}">
+                                    <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "day")'>Aujourd'hui</a>
+                                    <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "week")'>Cette semaine</a>
+                                    <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "month")'>Ce mois</a>
+                                    <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "year")'>Cette année</a>
+                                    <a class="dropdown-item" href="javascript:void(0);" wire:click='showTransactions({{ $agent->id }}, "custom")'>Intervalle</a>
                                 </div>
-                                <div class="">
-                                    <input type="date" class="form-control" wire:model="endDate">
-                                </div>
-                                <div class="">
-                                    <button class="btn btn-primary w-100" wire:click="$refresh">Filtrer</button>
-                                </div>
-                            @endif
-                        </div>
+                                @if ($filter === 'custom')
+                                    <div class="">
+                                        <input type="date" class="form-control" wire:model="startDate">
+                                    </div>
+                                    <div class="">
+                                        <input type="date" class="form-control" wire:model="endDate">
+                                    </div>
+                                    <div class="">
+                                        <button class="btn btn-primary w-100" wire:click="$refresh">Filtrer</button>
+                                    </div>
+                                @endif
+                            </div>
+                        @endcan
                     </div>
 
                     <div class="card-body">
