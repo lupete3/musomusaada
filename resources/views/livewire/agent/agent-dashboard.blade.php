@@ -43,6 +43,7 @@
                                     {{ $agent->status ? 'Actif' : 'Inactif' }}
                                 </label>
                             </div>
+                        @endcan
                             <div class="dropdown">
                                 <button class="btn p-0" type="button" id="dropdown-{{ $agent->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="bx bx-dots-vertical-rounded"></i>
@@ -66,7 +67,7 @@
                                     </div>
                                 @endif
                             </div>
-                        @endcan
+                        
                     </div>
 
                     <div class="card-body">
