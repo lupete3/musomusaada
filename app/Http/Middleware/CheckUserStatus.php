@@ -7,23 +7,24 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureUserRole
+class CheckUserStatus
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
+        if (Auth::check() && Auth::user()->status == 0) {
 
-        if (!Auth::check() || $user->status !== true) {
-            return redirect()->route('login');
-        }
+            Auth::logout();
 
-        if (!$user || !in_array($user->role, $roles)) {
-            return redirect()->route('dashboard');
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/login')
+                ->with('error', 'Votre compte est désactivé.');
         }
 
         return $next($request);

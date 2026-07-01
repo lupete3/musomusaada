@@ -25,9 +25,23 @@
     <div class="row g-4">
         @foreach ($users as $agent)
             <div class="col-md-4">
-                <div class="card shadow-sm">
+                <div class="card shadow-sm bg-{{ $agent->status ? '' : 'secondary' }}">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="m-0">Agent : {{ $agent->name }} {{ $agent->postnom }}</h6>
+                        <h6 class="m-0">Agent : {{ $agent->name }} {{ $agent->postnom }}
+                        </h6>
+                        <div class="form-check form-switch">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="status-{{ $agent->id }}"
+                                {{ $agent->status ? 'checked' : '' }}
+                                wire:click="toggleStatus({{ $agent->id }})">
+
+                            <label class="form-check-label"
+                                for="status-{{ $agent->id }}">
+                                {{ $agent->status ? 'Actif' : 'Inactif' }}
+                            </label>
+                        </div>
                         <div class="dropdown">
                             <button class="btn p-0" type="button" id="dropdown-{{ $agent->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="bx bx-dots-vertical-rounded"></i>

@@ -72,8 +72,16 @@
       <div class="misc-wrapper">
         <h2 class="mb-2 mx-2">Page Non Retrouvée : 😒</h2>
         <p class="mb-4 mx-2">Oops! 😖 Aucune ressources n'a été trouvée .</p>
-        <a href="{{ route('dashboard') }}" class="btn btn-primary">Revenir en arrière</a>
-
+        {{-- <a href="{{ route('dashboard') }}" class="btn btn-primary">Revenir en arrière</a> --}}
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <a href="{{ route('logout') }}" class="dropdown-item btn btn-danger"
+                onclick="event.preventDefault();
+                this.closest('form').submit();">
+                    <i class="bx bx-power-off me-2"></i>
+                    <span class="align-middle">Déconnexion</span>
+            </a>
+        </form>
         <div class="mt-3">
           <img
             src="{{ asset('/') }}assets/img/illustrations/page-misc-error-light.png"

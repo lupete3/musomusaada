@@ -117,7 +117,7 @@ class AgentDashboard extends Component
         ];
 
         $actualBalances = [];
-        
+
         foreach ($users as $user) {
             // Actual balances from AgentAccount table
             $userAccounts = \App\Models\AgentAccount::where('user_id', $user->id)->get();
@@ -150,5 +150,29 @@ class AgentDashboard extends Component
             'balances' => $balances,
             'actualBalances' => $actualBalances,
         ]);
+    }
+
+    public function toggleStatus($userId)
+    {
+        $user = User::findOrFail($userId);
+
+        // Inverse le statut
+        $user->status = !$user->status;
+        $user->save();
+
+        // Si le compte vient d'être désactivé
+        if (!$user->status) {
+
+            // Supprimer toutes ses sessions
+            DB::table('sessions')
+                ->where('user_id', $user->id)
+                ->delete();
+        }
+
+        notyf()->success(
+            $user->status
+                ? 'Agent activé.'
+                : 'Agent désactivé.'
+        );
     }
 }
