@@ -98,7 +98,7 @@
                     </div>
                 </div>
                 <div class="col-md-8 mt-4">
-                    <livewire:membership-card-stats>
+                    {{-- <livewire:membership-card-stats> --}}
                 </div>
             </div>
         </div>
