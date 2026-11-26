@@ -78,7 +78,7 @@
     <div class="row">
         <div class="col-md-12 mb-4">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="card h-100">
                         <div class="card-header bg-label-primary fw-bold">
                             Soldes Caisse Centrale
@@ -97,9 +97,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-8 mt-4">
+                {{-- <div class="col-md-8 mt-4">
                     {{-- <livewire:membership-card-stats> --}}
-                </div>
+                </div> --}}
             </div>
         </div>
 
